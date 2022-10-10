@@ -1,6 +1,9 @@
 package com.lukefz.dragaliafound.utils
 
 import android.annotation.SuppressLint
+import android.content.Intent
+import android.net.Uri
+import androidx.core.content.FileProvider
 import com.lukefz.dragaliafound.R
 import java.io.File
 import java.io.InputStream
@@ -18,6 +21,14 @@ object Utils {
         }
 
         return array;
+    }
+
+    fun configureInstallIntent(fileUri: Uri): Intent {
+        val intent = Intent(Intent.ACTION_VIEW)
+        intent.setDataAndType(fileUri, "application/vnd.android.package-archive")
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        return intent
     }
 
     fun getStackTrace(ex: Throwable): String {

@@ -26,4 +26,5 @@
     <string name="activity_patcher_step_install">Installing: %s</string>
     <string name="activity_about_credits_based_on">rtm516</string>
     <string name="activity_main_custom_server">Server Address</string>
+    <string name="patcher_back">Go back</string>
 </resources>

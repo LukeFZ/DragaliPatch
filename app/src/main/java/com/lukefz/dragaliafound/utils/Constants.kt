@@ -8,7 +8,7 @@ object Constants {
 
     const val URL_MAX_LENGTH = 40
     const val URL_OFFSET_ARM64 = 0x5cbb255
-    const val DEFAULT_CUSTOM_URL = "prod.dragaliafound.lukefz.xyz"
+    const val DEFAULT_CUSTOM_URL = "https://prod.dragaliafound.lukefz.xyz"
 
     const val ARM64_RET = 0xd65f03c0
     const val NETWORK_PACK_OFFSET_ARM64 = 0x2e56cb0

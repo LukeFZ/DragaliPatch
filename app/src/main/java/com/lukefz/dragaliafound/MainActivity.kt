@@ -12,13 +12,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-
-        // Fix for OSDetection in apktool
-        System.setProperty(
-            "sun.arch.data.model",
-            if (System.getProperty("os.arch")?.contains("64") == true) "64" else "32"
-        )
-
         setContent {
             DragaliPatchTheme {
                 // A surface container using the 'background' color from the theme

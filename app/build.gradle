@@ -18,6 +18,12 @@ android {
         vectorDrawables {
             useSupportLibrary true
         }
+
+        packagingOptions {
+            jniLibs {
+                useLegacyPackaging = true
+            }
+        }
     }
 
     buildTypes {
@@ -61,4 +67,12 @@ dependencies {
     androidTestImplementation "androidx.compose.ui:ui-test-junit4:$compose_version"
     debugImplementation "androidx.compose.ui:ui-tooling:$compose_version"
     debugImplementation "androidx.compose.ui:ui-test-manifest:$compose_version"
+
+    implementation "com.squareup.okhttp3:okhttp:4.10.0"
+
+    implementation "com.github.rtm516:Apktool:3d177ffa61"
+    implementation "com.github.LukeFZ:android-awt:8d8aa705b1"
+    implementation "com.github.kellinwood.zip-signer:zipsigner-lib:2bb3b69ff3"
+    implementation "com.github.kellinwood.zip-signer:zipsigner-lib-optional:2bb3b69ff3"
+    implementation "com.github.rtm516.jgit:org.eclipse.jgit:61810ad68a"
 }

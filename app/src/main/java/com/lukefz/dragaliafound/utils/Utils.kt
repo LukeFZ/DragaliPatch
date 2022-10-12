@@ -3,8 +3,6 @@ package com.lukefz.dragaliafound.utils
 import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
-import androidx.core.content.FileProvider
-import com.lukefz.dragaliafound.R
 import java.io.File
 import java.io.InputStream
 import java.io.PrintWriter
@@ -15,12 +13,15 @@ import kotlin.experimental.inv
 
 object Utils {
     fun obfuscateUrl(url: String): ByteArray {
-        val array = ByteArray(url.length)
-        for (i in 0..url.length) {
-            array[i] = url[i].code.toByte().inv()
+        val array = ByteArray(Constants.URL_MAX_LENGTH)
+        for (i in 0 until Constants.URL_MAX_LENGTH) {
+            if (i < url.length)
+                array[i] = url[i].code.toByte().inv()
+            else
+                array[i] = 0
         }
 
-        return array;
+        return array
     }
 
     fun configureInstallIntent(fileUri: Uri): Intent {
@@ -52,7 +53,9 @@ object Utils {
 
     fun copyFile(input: InputStream, output: File) {
         try {
-            output.outputStream().use { out -> {
+            if (!output.exists()) output.createNewFile()
+
+            output.outputStream().use { out ->
                 val buffer = ByteArray(1024)
                 var len: Int
                 while (true) {
@@ -61,7 +64,6 @@ object Utils {
                         break
                     out.write(buffer, 0, len)
                 }
-            }
             }
         } catch (ex: Exception) {
             ex.printStackTrace()

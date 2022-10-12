@@ -3,7 +3,6 @@
     <string name="activity_app_version_info">Version: %s (%d)</string>
     <string name="activity_app_is_patchable">Can be patched: %s</string>
     <string name="activity_installer_title">Installer</string>
-    <string name="activity_installer_install">Install</string>
     <string name="dialog_cancel">Cancel</string>
     <string name="dialog_cancel_question">Do you really want to cancel?</string>
     <string name="activity_about_title">About</string>
@@ -11,20 +10,27 @@
     <string name="activity_about_links">Links</string>
     <string name="activity_about_github">Github repo</string>
     <string name="activity_about_github_info">Source code of the app</string>
-    <string name="activity_about_credits">Credits</string>
-    <string name="activity_about_credits_app_creator">LukeFZ</string>
-    <string name="activity_about_custom_server_creators">dreadfullydistinct, Ceris</string>
+    <string name="activity_about_credits">Credits:</string>
+    <string name="activity_about_credits_based_on">Based on PatcherApp by rtm516 &amp; the Project Earth team</string>
+    <string name="activity_about_credits_app_creator">Ported and fixed for this game by LukeFZ</string>
+    <string name="activity_about_custom_server_creators">dreadfullydistinct &amp; Ceris,</string>
     <string name="activity_patcher_done">Done!</string>
     <string name="activity_patcher_failed">Failed</string>
     <string name="activity_patcher_step_decompile">Decompile</string>
     <string name="activity_patcher_step_patch">Patch</string>
     <string name="activity_patcher_step_recompile">Recompile</string>
     <string name="activity_patcher_step_sign">Sign</string>
-    <string name="activity_patcher_step_sign_setup">Setting up...</string>
-    <string name="activity_patcher_step_signing">Signing...</string>
-    <string name="activity_patcher_step_server_patch">Patching server address...</string>
-    <string name="activity_patcher_step_install">Installing: %s</string>
-    <string name="activity_about_credits_based_on">rtm516</string>
+    <string name="activity_patcher_step_sign_setup">Setting up…</string>
+    <string name="activity_patcher_step_signing" translatable="false">Signing…</string>
+    <string name="activity_patcher_step_server_patch">Patching server address…</string>
     <string name="activity_main_custom_server">Server Address</string>
     <string name="patcher_back">Go back</string>
+    <string name="activity_patcher_step_server_patch_completed">Patched server address!</string>
+    <string name="patcher_step_patch_other">Installing other patches…</string>
+    <string name="activity_patcher_step_download">Downloading patches…</string>
+    <string name="activity_patcher_step_install">Installing…</string>
+    <string name="activity_about_special_thanks">Special Thanks:</string>
+    <string name="activity_about_custom_server_creators_reason">for working on custom server reimplementations</string>
+    <string name="activity_patcher_title">Patcher</string>
+    <string name="activity_patcher_title_failed">Patching failed!</string>
 </resources>

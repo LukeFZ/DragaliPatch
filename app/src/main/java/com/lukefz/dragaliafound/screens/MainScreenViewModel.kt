@@ -1,7 +1,10 @@
 package com.lukefz.dragaliafound.screens
 
 import android.app.Application
+import android.content.Intent
 import android.graphics.drawable.Drawable
+import android.net.Uri
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.AndroidViewModel
 import com.lukefz.dragaliafound.R
 import com.lukefz.dragaliafound.utils.Constants
@@ -14,7 +17,7 @@ class MainScreenViewModel(private val app: Application) : AndroidViewModel(app) 
     var originalAppIcon: Drawable? = null
     var patchedAppIcon: Drawable? = null
     var isPatchable = false
-    var customServerUrl = Constants.DEFAULT_CUSTOM_URL
+    var customServerUrl = mutableStateOf(Constants.DEFAULT_CUSTOM_URL)
 
     init {
         val packageManager = app.packageManager
@@ -53,5 +56,12 @@ class MainScreenViewModel(private val app: Application) : AndroidViewModel(app) 
         } catch (_: Exception) {
             patchedAppInfo = "\nPatched app not installed!\n"
         }
+    }
+
+    fun openWebsite(url: String) {
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+
+        app.startActivity(intent)
     }
 }

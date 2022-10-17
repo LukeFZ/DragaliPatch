@@ -7,6 +7,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Done
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,6 +23,7 @@ import com.lukefz.dragaliafound.navigation.NavScreens
 @Composable
 fun PatcherScreen(controller: NavController, model: PatcherScreenViewModel = viewModel()) {
     val state = model.state
+    val textScroll = rememberScrollState()
 
     val animatedProgress by animateFloatAsState(
         targetValue = state.currentProgress,
@@ -32,28 +34,50 @@ fun PatcherScreen(controller: NavController, model: PatcherScreenViewModel = vie
         model.startPatch()
     }
 
+    LaunchedEffect(state.logMessages) {
+        textScroll.scrollTo(textScroll.maxValue)
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     if (state.hasFailed)
                         Text(stringResource(id = R.string.activity_patcher_title_failed))
+                    else if (state.hasFinished)
+                        Text(stringResource(id = R.string.activity_patcher_completed))
                     else
                         Text(stringResource(id = R.string.activity_patcher_title))
                 },
             )
         },
         floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = { controller.navigate(NavScreens.Main.route) },
-                icon = { Icon(Icons.Filled.ArrowBack, "Back arrow") },
-                text = {
-                    if (state.hasFailed)
-                        Text(stringResource(R.string.patcher_back))
-                    else
-                        Text(stringResource(R.string.dialog_cancel))
-                }
-            )
+            if (state.hasFailed || state.hasFinished) {
+                ExtendedFloatingActionButton(
+                    onClick = {
+                        if (state.hasFailed) {
+                            controller.navigate(NavScreens.Main.route)
+                        } else {
+                            model.installPatchedApp()
+                        }
+                    },
+                    icon = {
+                        if (state.hasFailed)
+                            Icon(Icons.Filled.ArrowBack, "Back arrow")
+                        else
+                            Icon(Icons.Filled.Done, "Done symbol")
+
+                    },
+                    text = {
+                        if (state.hasFailed)
+                            Text(stringResource(R.string.patcher_back))
+                        else
+                            Text(stringResource(R.string.install))
+                        //else
+                        //    Text(stringResource(R.string.dialog_cancel))
+                    }
+                )
+            }
         }
     ) { innerPadding ->
         Column(
@@ -82,7 +106,7 @@ fun PatcherScreen(controller: NavController, model: PatcherScreenViewModel = vie
                         state.logMessages,
                         modifier = Modifier
                             .padding(horizontal = 4.dp, vertical = 4.dp)
-                            .verticalScroll(rememberScrollState())
+                            .verticalScroll(textScroll)
                     )
                 }
             }

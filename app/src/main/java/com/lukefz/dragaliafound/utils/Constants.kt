@@ -12,18 +12,24 @@ object Constants {
 
     var currentCustomUrl = DEFAULT_CUSTOM_URL
 
+    // Constant patch consts
     const val ARM64_RET = 0xd65f03c0
     const val NETWORK_PACK_OFFSET_ARM64 = 0x2e56cb0L
     const val NETWORK_UNPACK_OFFSET_ARM64 = 0x2e573ccL
+    const val BAAS_URL_LOCATION = "assets/npf.json"
+    const val DEFAULT_BAAS_URL = "48cc81cdb8de30e061928f56e9bd4b4d.baas.nintendo.com"
+    const val DEFAULT_ACCOUNTS_URL = "accounts.nintendo.com"
 
     const val GITHUB_URL = "https://github.com/LukeFZ/DragaliPatch"
     const val PROJECT_EARTH_GITHUB_URL = "https://github.com/Project-Earth-Team/PatcherApp"
+    const val PATCH_DOWNLOAD_URL = "https://github.com/DragaliaLostRevival/DragaliPatch-Patches/archive/main.zip"
 
-    const val PATCH_DOWNLOAD_URL = "https://github.com/LukeFZ/DragaliPatchPatches/archive/main.zip" // "https://github.com/DragaliaLostRevival/AndroidPatches/archive/main.zip"
     const val AAPT = "aapt"
     const val FRAMEWORK = "framework"
     const val KEYSTORE = "dragaliafound.jks"
     const val PATCHING_DIR = "temp_patching"
     const val PATCH_DOWNLOAD_DIR = "patch"
     const val COLOR_DIR = "colorprofiles"
+    const val MANIFEST = "AndroidManifest.xml"
+    const val TEMP_PREFIX = "temp_"
 }

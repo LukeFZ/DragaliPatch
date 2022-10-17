@@ -44,7 +44,7 @@ fun MainScreen(navController: NavController, model: MainScreenViewModel = viewMo
         floatingActionButton = {
             if (model.isPatchable) {
                 ExtendedFloatingActionButton(
-                    onClick = { navController.navigate(NavScreens.Patcher.route) },
+                    onClick = { Constants.currentCustomUrl = model.customServerUrl.value; navController.navigate(NavScreens.Patcher.route) },
                     icon = { Icon(Icons.Filled.PlayArrow, "Start button") },
                     text = { Text(stringResource(R.string.activity_patcher_step_patch)) },
                 )
@@ -130,7 +130,7 @@ fun MainScreen(navController: NavController, model: MainScreenViewModel = viewMo
                         }
                     )
 
-                    SpacedLine(2.dp)
+                    SpacedLine(4.dp)
 
                     Text(
                         text = stringResource(R.string.activity_about_special_thanks),

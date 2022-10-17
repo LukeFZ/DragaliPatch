@@ -31,6 +31,9 @@
     <string name="activity_patcher_step_install">Installing…</string>
     <string name="activity_about_special_thanks">Special Thanks:</string>
     <string name="activity_about_custom_server_creators_reason">for working on custom server reimplementations</string>
-    <string name="activity_patcher_title">Patcher</string>
+    <string name="activity_patcher_title">Patching…</string>
     <string name="activity_patcher_title_failed">Patching failed!</string>
+    <string name="install">Install</string>
+    <string name="activity_patcher_completed">Completed!</string>
+    <string name="activity_patcher_title_completed">Patching completed!</string>
 </resources>

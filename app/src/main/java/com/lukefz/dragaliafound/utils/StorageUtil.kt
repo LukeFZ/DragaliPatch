@@ -23,6 +23,8 @@ class StorageUtil(ctx: Context) {
     val patchDir: Path = ctx.externalCacheDir!!.toPath().resolve(Constants.PATCH_DOWNLOAD_DIR)
 
     var sourceApk: File? = null
+    var isSplitApk: Boolean = false
+    var sourceApks: List<File>? = null
 
     val colorDir: Path = ctx.externalCacheDir!!.toPath().resolve(Constants.COLOR_DIR)
 
@@ -31,9 +33,17 @@ class StorageUtil(ctx: Context) {
             Utils.copyFile(ctx.resources.openRawResource(R.raw.dragaliafound), keystorePath)
         }
 
+        if (!patchDir.exists())
+            patchDir.toFile().mkdir()
+
         try {
             val info = ctx.packageManager.getPackageInfo(Constants.PACKAGE_NAME, 0).applicationInfo
-            sourceApk = File(info.sourceDir)
+            isSplitApk = (info.splitNames != null && info.splitNames.size > 1)
+            if (isSplitApk)
+                sourceApks = info.splitSourceDirs.map { a -> File(a) }
+            else
+                sourceApk = File(info.sourceDir)
+
         } catch (_: Exception) {
 
         }

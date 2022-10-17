@@ -37,6 +37,7 @@ class PatcherScreenViewModel(private val app: Application) : AndroidViewModel(ap
 
     override fun updateStep(id: Int) {
         state = state.copy(currentStep = app.getString(id))
+        onMessage("Next step: ${state.currentStep}")
     }
 
     override fun updateProgress(progress: Float) {
@@ -47,10 +48,43 @@ class PatcherScreenViewModel(private val app: Application) : AndroidViewModel(ap
         state = state.copy(currentProgress = state.currentProgress + progress)
     }
 
-    override fun launchInstallIntent() {
+    override fun installPatchedApp() {
         val uri = FileProvider.getUriForFile(app.applicationContext, app.applicationContext.packageName.plus(".provider"), storage.signedApk)
         app.startActivity(Utils.configureInstallIntent(uri))
     }
+
+    /*override fun installPatchedApp() {
+        val installer = app.applicationContext.packageManager.packageInstaller
+        val params = PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
+        val sessionId = installer.createSession(params)
+
+        installer.openSession(sessionId).use {session ->
+            storage.signedApk.inputStream().use { fileInput ->
+                session.openWrite(storage.signedApk.name, 0, storage.signedApk.length()).use {
+                    val buf = ByteArray(8192)
+                    var count: Int
+
+                    while (true) {
+                        count = fileInput.read(buf)
+                        if (count == -1)
+                            break
+                        it.write(buf, 0, count)
+                    }
+
+                    session.fsync(it)
+                }
+            }
+
+            val intent = PendingIntent.getBroadcast(
+                app.applicationContext,
+                sessionId,
+                Intent(),
+                PendingIntent.FLAG_IMMUTABLE)
+                .intentSender
+
+            session.commit(intent)
+        }
+    }*/
 
     fun startPatch() {
         // Fix for OSDetection in apktool
@@ -69,6 +103,7 @@ class PatcherScreenViewModel(private val app: Application) : AndroidViewModel(ap
             withContext(Dispatchers.IO) {
                 val download = StepDownloadPatch(ref, storage)
                 val decompile = StepDecompile(ref, storage)
+                val patchManifest = StepPatchSplitManifest(ref, storage)
                 val patch = StepPatch(ref, storage)
                 val recompile = StepRecompile(ref, storage)
                 val sign = StepSign(ref, storage)
@@ -78,6 +113,10 @@ class PatcherScreenViewModel(private val app: Application) : AndroidViewModel(ap
                         download.run()
                         updateProgress(0.2f)
                         decompile.run()
+                        if (storage.isSplitApk) {
+                            updateProgress(0.3f)
+                            patchManifest.run()
+                        }
                         updateProgress(0.4f)
                         patch.run()
                         updateProgress(0.6f)
@@ -86,8 +125,9 @@ class PatcherScreenViewModel(private val app: Application) : AndroidViewModel(ap
                         sign.run()
                         updateProgress(1.0f)
 
-                        updateStep(R.string.activity_patcher_step_install)
-                        launchInstallIntent()
+                        onMessage("Ready to install.")
+                        updateStep(R.string.activity_patcher_completed)
+                        state = state.copy(hasFinished = true)
                     } catch (ex: Exception) {
                         onMessage(Utils.getStackTrace(ex))
                         hasFailed()

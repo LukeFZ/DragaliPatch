@@ -9,6 +9,7 @@ import com.lukefz.dragaliafound.logging.StepManager
 import com.lukefz.dragaliafound.utils.Constants
 import com.lukefz.dragaliafound.utils.StorageUtil
 import com.lukefz.dragaliafound.utils.Utils
+import kotlin.io.path.deleteExisting
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
@@ -22,42 +23,38 @@ class StepDecompile(private val manager: StepManager, private val storage: Stora
         val androlibResLogger = PatchLogger(manager, AndrolibResources::class.java.name)
         Utils.setField(AndrolibResources::class.java.getDeclaredField("LOGGER"), androlibResLogger)
 
-        val decoder = ApkDecoder()
+        val decoder = ApkDecoder(storage.sourceApk)
 
-        try {
-            decoder.setApkFile(if (storage.isSplitApk) storage.sourceApks?.get(0) else storage.sourceApk)
-            decoder.setOutDir(storage.workDir.toFile())
-            decoder.setForceDelete(true)
-            decoder.setFrameworkDir(storage.frameworkDir)
-            decoder.decode()
+        decoder.setOutDir(storage.appPatchDir.toFile())
+        decoder.setForceDelete(true)
+        decoder.setFrameworkDir(storage.frameworkDir)
+        decoder.decode()
 
-            if (storage.isSplitApk) {
-                manager.updateProgress(0.1f / storage.sourceApks!!.size)
+        if (storage.isSplitApk) {
+            manager.addProgress(0.1f / (storage.sourceApks!!.size + 1))
 
-                val manifest = storage.workDir.resolve(Constants.MANIFEST)
-                val originalManifest = manifest.readText()
-                decoder.setForceDelete(false)
-                for (file in storage.sourceApks!!.drop(1)) {
-                    val tempFolder = storage.workDir.resolve(Constants.TEMP_PREFIX.plus(file.nameWithoutExtension))
+            val manifest = storage.appPatchDir.resolve(Constants.MANIFEST)
+            val originalManifest = manifest.readText()
+            decoder.setForceDelete(false)
+            for (file in storage.sourceApks!!) {
+                val tempFolder = storage.appPatchDir.resolve(Constants.TEMP_PREFIX.plus(file.nameWithoutExtension))
 
-                    decoder.setOutDir(tempFolder.toFile())
-                    decoder.setApkFile(file)
-                    decoder.decode()
+                decoder.setOutDir(tempFolder.toFile())
+                decoder.setApkFile(file)
+                decoder.decode()
 
-                    tempFolder.toFile().copyRecursively(storage.workDir.toFile(), true)
-                    tempFolder.toFile().deleteRecursively()
+                tempFolder.resolve("apktool.yml").deleteExisting()
+                tempFolder.toFile().copyRecursively(storage.appPatchDir.toFile(), true)
+                tempFolder.toFile().deleteRecursively()
 
-                    manager.updateProgress(0.1f / storage.sourceApks!!.size)
-                }
-
-                manifest.writeText(originalManifest)
+                manager.addProgress(0.1f / (storage.sourceApks!!.size + 1))
             }
 
-            manager.onMessage("Finished decompiling!")
-        } finally {
-            try {
-                decoder.close()
-            } catch (_: Exception) {}
+            manifest.writeText(originalManifest)
         }
+
+        decoder.close()
+
+        manager.onMessage("Finished decompiling!")
     }
 }

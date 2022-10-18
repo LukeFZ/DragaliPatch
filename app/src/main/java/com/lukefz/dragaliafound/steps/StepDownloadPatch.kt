@@ -34,7 +34,7 @@ class StepDownloadPatch(private val manager: StepManager, private val storage: S
 
                         manager.onMessage("Found patch: $fileName")
 
-                        Utils.copyFile(zip, storage.patchDir.resolve(fileName).toFile())
+                        Utils.copyFile(zip, storage.downloadedPatchDir.resolve(fileName).toFile())
 
                         zip.closeEntry()
                     }

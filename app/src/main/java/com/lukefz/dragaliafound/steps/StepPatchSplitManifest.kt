@@ -7,7 +7,7 @@ class StepPatchSplitManifest(private val manager: StepManager, private val stora
     fun run() {
         manager.onMessage("Split APK detected - Patching manifest...")
 
-        val manifest = storage.patchDir.resolve("AndroidManifest.xml").toFile()
+        val manifest = storage.appPatchDir.resolve("AndroidManifest.xml").toFile()
         val manifestContent = manifest
             .readText()
             .replace(" android:extractNativeLibs=\"true\"", "")

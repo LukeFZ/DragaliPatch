@@ -13,14 +13,16 @@ import kotlin.io.path.exists
 class StorageUtil(ctx: Context) {
 
     val unsignedApk: File = ctx.externalCacheDir!!.toPath().resolve(Constants.PATCHED_PACKAGE_NAME.plus("_unsigned").plus(Constants.APK_EXTENSION)).toFile()
+    val alignedApk: File = ctx.externalCacheDir!!.toPath().resolve(Constants.PATCHED_PACKAGE_NAME.plus("_aligned").plus(Constants.APK_EXTENSION)).toFile()
     val signedApk: File = ctx.getExternalFilesDir("")!!.toPath().resolve(Constants.PATCHED_PACKAGE_NAME.plus(Constants.APK_EXTENSION)).toFile()
 
     val frameworkDir: String = ctx.externalCacheDir!!.toPath().resolve(Constants.FRAMEWORK).toString()
     val aaptPath: File = Path(ctx.applicationInfo.nativeLibraryDir).resolve(Constants.AAPT).toFile()
+    val zipalignPath: File = Path(ctx.applicationInfo.nativeLibraryDir).resolve(Constants.ZIPALIGN).toFile()
     val keystorePath: File = ctx.externalCacheDir!!.toPath().resolve(Constants.KEYSTORE).toFile()
 
-    val workDir: Path = ctx.externalCacheDir!!.toPath().resolve(Constants.PATCHING_DIR)
-    val patchDir: Path = ctx.externalCacheDir!!.toPath().resolve(Constants.PATCH_DOWNLOAD_DIR)
+    val appPatchDir: Path = ctx.externalCacheDir!!.toPath().resolve(Constants.PATCHING_DIR)
+    val downloadedPatchDir: Path = ctx.externalCacheDir!!.toPath().resolve(Constants.PATCH_DOWNLOAD_DIR)
 
     var sourceApk: File? = null
     var isSplitApk: Boolean = false
@@ -33,16 +35,15 @@ class StorageUtil(ctx: Context) {
             Utils.copyFile(ctx.resources.openRawResource(R.raw.dragaliafound), keystorePath)
         }
 
-        if (!patchDir.exists())
-            patchDir.toFile().mkdir()
+        if (!downloadedPatchDir.exists())
+            downloadedPatchDir.toFile().mkdir()
 
         try {
             val info = ctx.packageManager.getPackageInfo(Constants.PACKAGE_NAME, 0).applicationInfo
-            isSplitApk = (info.splitNames != null && info.splitNames.size > 1)
+            sourceApk = File(info.sourceDir)
+            isSplitApk = info.splitSourceDirs != null
             if (isSplitApk)
                 sourceApks = info.splitSourceDirs.map { a -> File(a) }
-            else
-                sourceApk = File(info.sourceDir)
 
         } catch (_: Exception) {
 

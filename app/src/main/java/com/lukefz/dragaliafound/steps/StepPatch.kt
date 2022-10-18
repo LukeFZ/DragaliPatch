@@ -9,6 +9,7 @@ import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.patch.FileHeader
 import org.eclipse.jgit.patch.Patch
 import java.io.RandomAccessFile
+import android.os.Process
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
@@ -38,7 +39,7 @@ class StepPatch(private val manager: StepManager, private val storage: StorageUt
 
         val urlWithoutPrefixAndSuffix = addr.split("://")[1].dropLast(1)
 
-        val npf = storage.workDir.resolve(Constants.BAAS_URL_LOCATION)
+        val npf = storage.appPatchDir.resolve(Constants.BAAS_URL_LOCATION)
         val contents = npf
             .readText()
             .replace(Constants.DEFAULT_BAAS_URL, urlWithoutPrefixAndSuffix)
@@ -47,8 +48,8 @@ class StepPatch(private val manager: StepManager, private val storage: StorageUt
 
         manager.updateStep(R.string.patcher_step_patch_other)
 
-        Git.init().setDirectory(storage.workDir.toFile()).call().use { git ->
-            val files = storage.patchDir.toFile().listFiles()?.sorted()
+        Git.init().setDirectory(storage.appPatchDir.toFile()).call().use { git ->
+            val files = storage.downloadedPatchDir.toFile().listFiles()?.sorted()
 
             if (files != null) {
                 for (file in files) {
@@ -60,7 +61,7 @@ class StepPatch(private val manager: StepManager, private val storage: StorageUt
                             patch.parse(input)
                             for (header in patch.files) {
                                 if (header.patchType == FileHeader.PatchType.UNIFIED)
-                                    Utils.normalizeFileEndings(storage.workDir.resolve(header.oldPath).toFile())
+                                    Utils.normalizeFileEndings(storage.appPatchDir.resolve(header.oldPath).toFile())
                             }
                         }
 
@@ -75,27 +76,35 @@ class StepPatch(private val manager: StepManager, private val storage: StorageUt
         }
     }
 
-    fun patchServerAddress() {
+    private fun patchServerAddress() {
         val obfuscatedUrl = Utils.obfuscateUrl(Constants.currentCustomUrl)
 
+        val isArm64 = Process.is64Bit()
+        val libName = if (isArm64) "arm64-v8a" else "armeabi-v7a"
+
+        val urlOffset = if (isArm64) Constants.Arm64Constants.URL_OFFSET else Constants.Arm32Constants.URL_OFFSET
+        val ret = if (isArm64) Constants.Arm64Constants.RET else Constants.Arm32Constants.RET
+        val networkPackOffset = if (isArm64) Constants.Arm64Constants.NETWORK_PACK else Constants.Arm32Constants.NETWORK_PACK
+        val networkUnpackOffset = if (isArm64) Constants.Arm64Constants.NETWORK_UNPACK else Constants.Arm32Constants.NETWORK_UNPACK
+
         RandomAccessFile(
-            storage.workDir.resolve("lib/arm64-v8a/libil2cpp.so").toString(),
+            storage.appPatchDir.resolve("lib/$libName/libil2cpp.so").toString(),
             "rw"
         ).use {
-            it.seek(Constants.URL_OFFSET_ARM64)
+            it.seek(urlOffset)
             it.write(obfuscatedUrl)
 
-            it.seek(Constants.NETWORK_PACK_OFFSET_ARM64)
-            it.writeByte(Constants.ARM64_RET.ushr(24).and(0xff).toInt())
-            it.writeByte(Constants.ARM64_RET.ushr(16).and(0xff).toInt())
-            it.writeByte(Constants.ARM64_RET.ushr(8).and(0xff).toInt())
-            it.writeByte(Constants.ARM64_RET.and(0xff).toInt())
+            it.seek(networkPackOffset)
+            it.writeByte(ret.ushr(24).and(0xff).toInt())
+            it.writeByte(ret.ushr(16).and(0xff).toInt())
+            it.writeByte(ret.ushr(8).and(0xff).toInt())
+            it.writeByte(ret.and(0xff).toInt())
 
-            it.seek(Constants.NETWORK_UNPACK_OFFSET_ARM64)
-            it.writeByte(Constants.ARM64_RET.ushr(24).and(0xff).toInt())
-            it.writeByte(Constants.ARM64_RET.ushr(16).and(0xff).toInt())
-            it.writeByte(Constants.ARM64_RET.ushr(8).and(0xff).toInt())
-            it.writeByte(Constants.ARM64_RET.and(0xff).toInt())
+            it.seek(networkUnpackOffset)
+            it.writeByte(ret.ushr(24).and(0xff).toInt())
+            it.writeByte(ret.ushr(16).and(0xff).toInt())
+            it.writeByte(ret.ushr(8).and(0xff).toInt())
+            it.writeByte(ret.and(0xff).toInt())
         }
     }
 }

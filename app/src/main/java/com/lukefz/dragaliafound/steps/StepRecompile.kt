@@ -19,7 +19,7 @@ class StepRecompile(private val manager: StepManager, private val storage: Stora
         options.frameworkFolderLocation = storage.frameworkDir
         options.aaptPath = storage.aaptPath.absolutePath
 
-        Androlib(options).build(storage.workDir.toFile(), storage.unsignedApk)
+        Androlib(options).build(storage.appPatchDir.toFile(), storage.unsignedApk)
         manager.onMessage("Finished recompiling!")
     }
 }

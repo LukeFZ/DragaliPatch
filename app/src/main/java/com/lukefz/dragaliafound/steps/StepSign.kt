@@ -1,10 +1,10 @@
 package com.lukefz.dragaliafound.steps
 
+import com.android.apksig.ApkSigner
 import com.lukefz.dragaliafound.R
 import com.lukefz.dragaliafound.logging.StepManager
 import com.lukefz.dragaliafound.utils.StorageUtil
-import kellinwood.security.zipsigner.ZipSigner
-import kellinwood.security.zipsigner.optional.KeyStoreFileManager
+import java.security.KeyStore
 import java.security.PrivateKey
 import java.security.cert.X509Certificate
 
@@ -12,35 +12,29 @@ class StepSign(private val manager: StepManager, private val storage: StorageUti
     fun run() {
         manager.updateStep(R.string.activity_patcher_step_signing)
         manager.onMessage("Loading keystore...")
-        val keystore = KeyStoreFileManager.loadKeyStore(storage.keystorePath.path, "dragaliafound".toCharArray())
-        manager.onMessage("Loaded keystore!")
+        val keystoreInstance = KeyStore.getInstance("PKCS12")
 
-        val signer = ZipSigner()
-
-        var previousPercent = 0
-        var previousMessage = ""
-
-        signer.addProgressListener {
-            if (it.percentDone % 10 == 0) {
-                if (previousPercent == 0 || previousPercent != it.percentDone) {
-                    previousPercent = it.percentDone
-                    manager.addProgress((it.percentDone - previousPercent) / 100f)
-                    if (previousMessage != it.message) {
-                        previousMessage = it.message
-                        manager.onMessage(it.message)
-                    }
-                }
-            }
+        storage.keystorePath.inputStream().use {
+            keystoreInstance.load(it, "dragaliafound".toCharArray())
         }
 
-        signer.issueLoadingCertAndKeysProgressEvent()
-        val signCert = keystore.getCertificate("dragaliafound") as X509Certificate
-        val signKey = keystore.getKey("dragaliafound", "dragaliafound".toCharArray()) as PrivateKey
+        val privateKey = keystoreInstance.getKey("dragaliafound", "dragaliafound".toCharArray()) as PrivateKey
+        val certificate = keystoreInstance.getCertificate("dragaliafound") as X509Certificate
+        val config = ApkSigner.SignerConfig.Builder("DragaliPatch", privateKey, listOf(certificate)).build()
+        val signer = ApkSigner
+            .Builder(listOf(config))
+            .setV2SigningEnabled(true)
+            .setInputApk(storage.alignedApk)
+            .setOutputApk(storage.signedApk)
+            .setDebuggableApkPermitted(true)
+            .setSourceStampSignerConfig(config)
+            .setCreatedBy("DragaliPatch")
+            .build()
 
-        signer.setKeys("dragaliafound", signCert, signKey, "SHA256withRSA", null)
+        manager.onMessage("Loaded keystore!")
 
         manager.onMessage("Signing...")
-        signer.signZip(storage.unsignedApk.toString(), storage.signedApk.toString())
+        signer.sign()
         manager.onMessage("Finished signing!")
     }
 }

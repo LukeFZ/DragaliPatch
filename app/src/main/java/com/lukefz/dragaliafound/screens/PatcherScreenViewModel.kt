@@ -106,6 +106,7 @@ class PatcherScreenViewModel(private val app: Application) : AndroidViewModel(ap
                 val patchManifest = StepPatchSplitManifest(ref, storage)
                 val patch = StepPatch(ref, storage)
                 val recompile = StepRecompile(ref, storage)
+                val align = StepAlign(ref, storage)
                 val sign = StepSign(ref, storage)
 
                 runBlocking {
@@ -121,6 +122,8 @@ class PatcherScreenViewModel(private val app: Application) : AndroidViewModel(ap
                         patch.run()
                         updateProgress(0.6f)
                         recompile.run()
+                        updateProgress(0.7f)
+                        align.run()
                         updateProgress(0.8f)
                         sign.run()
                         updateProgress(1.0f)

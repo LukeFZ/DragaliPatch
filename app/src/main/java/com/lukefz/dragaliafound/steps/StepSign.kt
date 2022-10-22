@@ -27,7 +27,6 @@ class StepSign(private val manager: StepManager, private val storage: StorageUti
             .setInputApk(storage.alignedApk)
             .setOutputApk(storage.signedApk)
             .setDebuggableApkPermitted(true)
-            .setSourceStampSignerConfig(config)
             .setCreatedBy("DragaliPatch")
             .build()
 

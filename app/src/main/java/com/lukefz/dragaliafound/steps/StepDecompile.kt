@@ -43,7 +43,7 @@ class StepDecompile(private val manager: StepManager, private val storage: Stora
                 decoder.setApkFile(file)
                 decoder.decode()
 
-                tempFolder.resolve("apktool.yml").deleteExisting()
+                tempFolder.resolve(Constants.APKTOOL).deleteExisting()
                 tempFolder.toFile().copyRecursively(storage.appPatchDir.toFile(), true)
                 tempFolder.toFile().deleteRecursively()
 

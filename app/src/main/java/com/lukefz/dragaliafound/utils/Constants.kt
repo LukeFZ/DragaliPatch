@@ -41,5 +41,8 @@ object Constants {
     const val PATCH_DOWNLOAD_DIR = "patch"
     const val COLOR_DIR = "colorprofiles"
     const val MANIFEST = "AndroidManifest.xml"
+    const val APKTOOL = "apktool.yml"
     const val TEMP_PREFIX = "temp_"
+    const val UNSIGNED_SUFFIX = "_unsigned"
+    const val ALIGNED_SUFFIX = "_aligned"
 }

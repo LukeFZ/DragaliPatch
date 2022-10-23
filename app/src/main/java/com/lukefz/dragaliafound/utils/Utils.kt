@@ -25,7 +25,7 @@ object Utils {
             if (i < url.length)
                 array[i] = url[i].code.toByte().inv()
             else
-                array[i] = 0
+                array[i] = -1
         }
 
         return array

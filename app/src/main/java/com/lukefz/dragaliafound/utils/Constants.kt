@@ -8,6 +8,7 @@ object Constants {
 
     const val URL_MAX_LENGTH = 40
     const val DEFAULT_CUSTOM_URL = "https://prod.dragaliafound.lukefz.xyz"
+    const val DEFAULT_CDN_URL = "https://dragalialost.akamaized.net"
 
     var currentCustomUrl = DEFAULT_CUSTOM_URL
 
@@ -19,6 +20,12 @@ object Constants {
         const val CONESHELL_PUBKEY = 0x47d5d54L
         const val URL_OFFSET = 0x5cbb255L
         const val URL_LENGTH_OFFSET = 0x5c7c6c8L
+        const val SUNSET_OFFSET = 0x2453A60L
+        const val SUNSET_PATCH = 0x1008252L
+        const val CDN_URL_OFFSET_1 = 0x5cf33faL
+        const val CDN_URL_LENGTH_OFFSET_1 = 0x5c8da80L
+        const val CDN_URL_OFFSET_2 = CDN_URL_OFFSET_1 + 0x3c
+        const val CDN_URL_LENGTH_OFFSET_2 = CDN_URL_LENGTH_OFFSET_1 + 0x8
     }
 
     object Arm32Constants {
@@ -29,6 +36,12 @@ object Constants {
         const val CONESHELL_PUBKEY = 0x429f560L
         const val URL_OFFSET = 0x497b8d9L
         const val URL_LENGTH_OFFSET = 0x493cd4cL
+        const val SUNSET_OFFSET = 0x17EF698L
+        const val SUNSET_PATCH = 0x1001E3L
+        const val CDN_URL_OFFSET_1 = 0x49b3a7eL
+        const val CDN_URL_LENGTH_OFFSET_1 = 0x494e104L
+        const val CDN_URL_OFFSET_2 = CDN_URL_OFFSET_1 + 0x3c
+        const val CDN_URL_LENGTH_OFFSET_2 = CDN_URL_LENGTH_OFFSET_1 + 0x8
     }
 
     const val BAAS_URL_LOCATION = "assets/npf.json"
@@ -52,6 +65,7 @@ object Constants {
     const val UNSIGNED_SUFFIX = "_unsigned"
     const val ALIGNED_SUFFIX = "_aligned"
 
-    const val APIMODE_ENDPOINT = "./dragalipatch/mode"
-    const val CONESHELL_ENDPOINT = "./dragalipatch/coneshell_pubkey"
+    const val APIMODE_ENDPOINT = "/dragalipatch/mode"
+    const val CONESHELL_ENDPOINT = "/dragalipatch/coneshell_pubkey"
+    const val CDNURL_ENDPOINT = "/dragalipatch/cdn_url"
 }

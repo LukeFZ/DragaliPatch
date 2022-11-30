@@ -9,11 +9,11 @@ import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.patch.FileHeader
 import org.eclipse.jgit.patch.Patch
 import java.io.RandomAccessFile
-import android.os.Process
 import com.lukefz.dragaliafound.utils.ApiMode
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import kotlin.experimental.inv
+import kotlin.io.path.exists
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
@@ -37,7 +37,7 @@ class StepPatch(private val manager: StepManager, private val storage: StorageUt
 
         Constants.currentCustomUrl = addr
 
-        patchServerAddress(getApiMode())
+        applyNativePatches(getApiMode())
 
         manager.onMessage("Patched server address!")
 
@@ -80,15 +80,17 @@ class StepPatch(private val manager: StepManager, private val storage: StorageUt
         }
     }
 
-    private fun patchServerAddress(mode: ApiMode) {
+    private fun applyNativePatches(mode: ApiMode) {
         val obfuscatedUrl = Utils.obfuscateUrl(Constants.currentCustomUrl)
 
-        val isArm64 = Process.is64Bit()
+        val isArm64 = storage.appPatchDir.resolve("lib/arm64-v8a").exists()
         val libName = if (isArm64) "arm64-v8a" else "armeabi-v7a"
 
         val ret = if (isArm64) Constants.Arm64Constants.RET else Constants.Arm32Constants.RET
         val urlOffset = if (isArm64) Constants.Arm64Constants.URL_OFFSET else Constants.Arm32Constants.URL_OFFSET
         val urlLengthOffset = if (isArm64) Constants.Arm64Constants.URL_LENGTH_OFFSET else Constants.Arm32Constants.URL_LENGTH_OFFSET
+
+        val cdnUrl = getCdnUrl()
 
         RandomAccessFile(
             storage.appPatchDir.resolve("lib/$libName/libil2cpp.so").toString(),
@@ -99,6 +101,28 @@ class StepPatch(private val manager: StepManager, private val storage: StorageUt
 
             it.seek(urlOffset)
             it.write(obfuscatedUrl)
+
+            if (cdnUrl != Constants.DEFAULT_CDN_URL) {
+                val cdnUrl1 = Utils.obfuscateUrl(cdnUrl.plus("/dl/assetbundles/Android//")) // yes it actually has two backslashes at the end
+                val cdnUrlOffset = if (isArm64) Constants.Arm64Constants.CDN_URL_OFFSET_1 else Constants.Arm32Constants.CDN_URL_OFFSET_1
+                val cdnUrlLengthOffset = if (isArm64) Constants.Arm64Constants.CDN_URL_LENGTH_OFFSET_1 else Constants.Arm32Constants.CDN_URL_LENGTH_OFFSET_1
+
+                it.seek(cdnUrlLengthOffset)
+                it.writeByte(cdnUrl1.count().toByte().inv().toInt())
+
+                it.seek(cdnUrlOffset)
+                it.write(cdnUrl1)
+
+                val cdnUrl2 = Utils.obfuscateUrl(cdnUrl.plus("dl/assetbundles/Android/"))
+                val cdnUrl2Offset = if (isArm64) Constants.Arm64Constants.CDN_URL_OFFSET_2 else Constants.Arm32Constants.CDN_URL_OFFSET_2
+                val cdnUrl2LengthOffset = if (isArm64) Constants.Arm64Constants.CDN_URL_LENGTH_OFFSET_2 else Constants.Arm32Constants.CDN_URL_LENGTH_OFFSET_2
+
+                it.seek(cdnUrl2LengthOffset)
+                it.writeByte(cdnUrl2.count().toByte().inv().toInt())
+
+                it.seek(cdnUrl2Offset)
+                it.write(cdnUrl2)
+            }
 
             when (mode) {
                 ApiMode.RAW -> {
@@ -134,6 +158,15 @@ class StepPatch(private val manager: StepManager, private val storage: StorageUt
                     it.write(pubkey)
                 }
             }
+
+            val sunsetOffset = if (isArm64) Constants.Arm64Constants.SUNSET_OFFSET else Constants.Arm32Constants.SUNSET_OFFSET
+            val sunsetPatch = if (isArm64) Constants.Arm64Constants.SUNSET_PATCH else Constants.Arm32Constants.SUNSET_PATCH
+
+            it.seek(sunsetOffset)
+            it.writeByte(sunsetPatch.ushr(24).and(0xff).toInt())
+            it.writeByte(sunsetPatch.ushr(16).and(0xff).toInt())
+            it.writeByte(sunsetPatch.ushr(8).and(0xff).toInt())
+            it.writeByte(sunsetPatch.and(0xff).toInt())
         }
     }
 
@@ -167,5 +200,19 @@ class StepPatch(private val manager: StepManager, private val storage: StorageUt
         }
 
         throw IllegalAccessException("Could not get server pubkey for Coneshell-enabled API.")
+    }
+
+    private fun getCdnUrl(): String {
+        val client = OkHttpClient()
+        val request = Request.Builder()
+            .url(Constants.currentCustomUrl.plus(Constants.CDNURL_ENDPOINT))
+            .build()
+
+        client.newCall(request).execute().use {
+            if (it.isSuccessful && it.body != null)
+                return it.body!!.string()
+        }
+
+        return Constants.DEFAULT_CDN_URL
     }
 }

@@ -209,8 +209,12 @@ class StepPatch(private val manager: StepManager, private val storage: StorageUt
             .build()
 
         client.newCall(request).execute().use {
-            if (it.isSuccessful && it.body != null)
-                return it.body!!.string()
+            if (it.isSuccessful && it.body != null) {
+                if (it.body!!.string().length > 0x24)
+                    return it.body!!.string()
+                else
+                    throw IllegalAccessException("Server provided cdn url that was too long.")
+            }
         }
 
         return Constants.DEFAULT_CDN_URL

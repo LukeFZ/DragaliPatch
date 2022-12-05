@@ -12,6 +12,7 @@ import java.io.RandomAccessFile
 import com.lukefz.dragaliafound.utils.ApiMode
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import java.net.UnknownHostException
 import kotlin.experimental.inv
 import kotlin.io.path.exists
 import kotlin.io.path.readText
@@ -172,50 +173,56 @@ class StepPatch(private val manager: StepManager, private val storage: StorageUt
 
     private fun getApiMode(): ApiMode {
         val client = OkHttpClient()
-        val request = Request.Builder()
-            .url(Constants.currentCustomUrl.plus(Constants.APIMODE_ENDPOINT))
-            .build()
+        try {
+            val request = Request.Builder()
+                .url(Constants.currentCustomUrl.plus(Constants.APIMODE_ENDPOINT))
+                .build()
 
-        client.newCall(request).execute().use {
-            if (it.isSuccessful && it.body != null)
-                return ApiMode.valueOf(it.body!!.string())
-        }
+            client.newCall(request).execute().use {
+                if (it.isSuccessful && it.body != null)
+                    return ApiMode.valueOf(it.body!!.string())
+            }
+        } catch (_: Exception) { }
 
         return ApiMode.RAW
     }
 
     private fun getPubKey(): ByteArray {
         val client = OkHttpClient()
-        val request = Request.Builder()
-            .url(Constants.currentCustomUrl.plus(Constants.CONESHELL_ENDPOINT))
-            .build()
+        try {
+            val request = Request.Builder()
+                .url(Constants.currentCustomUrl.plus(Constants.CONESHELL_ENDPOINT))
+                .build()
 
-        client.newCall(request).execute().use {
-            if (it.body != null) {
-                if (it.body!!.bytes().size == 32)
-                    return it.body!!.bytes()
-                else
-                    throw IllegalAccessException("Server provided pubkey that was not 32 bytes in length.")
+            client.newCall(request).execute().use {
+                if (it.body != null) {
+                    if (it.body!!.bytes().size == 32)
+                        return it.body!!.bytes()
+                    else
+                        throw IllegalAccessException("Server provided pubkey that was not 32 bytes in length.")
+                }
             }
-        }
+        } catch (_: Exception) { }
 
         throw IllegalAccessException("Could not get server pubkey for Coneshell-enabled API.")
     }
 
     private fun getCdnUrl(): String {
         val client = OkHttpClient()
-        val request = Request.Builder()
-            .url(Constants.currentCustomUrl.plus(Constants.CDNURL_ENDPOINT))
-            .build()
+        try {
+            val request = Request.Builder()
+                .url(Constants.currentCustomUrl.plus(Constants.CDNURL_ENDPOINT))
+                .build()
 
-        client.newCall(request).execute().use {
-            if (it.isSuccessful && it.body != null) {
-                if (it.body!!.string().length > 0x24)
-                    return it.body!!.string()
-                else
-                    throw IllegalAccessException("Server provided cdn url that was too long.")
+            client.newCall(request).execute().use {
+                if (it.isSuccessful && it.body != null) {
+                    if (it.body!!.string().length > 0x24)
+                        return it.body!!.string()
+                    else
+                        throw IllegalAccessException("Server provided cdn url that was too long.")
+                }
             }
-        }
+        } catch (_: UnknownHostException) { }
 
         return Constants.DEFAULT_CDN_URL
     }

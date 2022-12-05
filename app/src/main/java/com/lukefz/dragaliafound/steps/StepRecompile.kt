@@ -1,7 +1,7 @@
 package com.lukefz.dragaliafound.steps
 
 import brut.androlib.Androlib
-import brut.androlib.ApkOptions
+import brut.androlib.options.BuildOptions
 import com.lukefz.dragaliafound.R
 import com.lukefz.dragaliafound.logging.PatchLogger
 import com.lukefz.dragaliafound.logging.StepManager
@@ -15,7 +15,7 @@ class StepRecompile(private val manager: StepManager, private val storage: Stora
         val androlibLogger = PatchLogger(manager, Androlib::class.java.name)
         Utils.setField(Androlib::class.java.getDeclaredField("LOGGER"), androlibLogger)
 
-        val options = ApkOptions()
+        val options = BuildOptions()
         options.frameworkFolderLocation = storage.frameworkDir
         options.aaptPath = storage.aaptPath.absolutePath
 

@@ -31,24 +31,29 @@ android {
     }
 
     buildTypes {
-        release {
-            minifyEnabled false
+        debug {
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+
     kotlinOptions {
         jvmTarget = '1.8'
     }
+
     buildFeatures {
         compose true
     }
+
     composeOptions {
         kotlinCompilerExtensionVersion '1.2.0'
     }
+
     packagingOptions {
         resources {
             excludes += '/META-INF/{AL2.0,LGPL2.1}'
@@ -75,7 +80,7 @@ dependencies {
 
     implementation "com.squareup.okhttp3:okhttp:4.10.0"
 
-    implementation "com.github.rtm516:Apktool:3d177ffa61"
+    implementation "com.github.LukeFZ:Apktool:fb959c30"
     implementation "com.github.LukeFZ:android-awt:8d8aa705b1"
     implementation "com.android.tools.build:apksig:7.3.1"
     implementation "com.github.rtm516.jgit:org.eclipse.jgit:61810ad68a"

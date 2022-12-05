@@ -31,6 +31,13 @@ class StorageUtil(ctx: Context) {
     val colorDir: Path = ctx.externalCacheDir!!.toPath().resolve(Constants.COLOR_DIR)
 
     init {
+        try {
+            aaptPath.setExecutable(true)
+            zipalignPath.setExecutable(true)
+        } catch (_: Exception) {
+
+        }
+
         if (!keystorePath.exists()) {
             Utils.copyFile(ctx.resources.openRawResource(R.raw.dragaliafound), keystorePath)
         }

@@ -52,8 +52,8 @@ object Constants {
     const val PROJECT_EARTH_GITHUB_URL = "https://github.com/Project-Earth-Team/PatcherApp"
     const val PATCH_DOWNLOAD_URL = "https://github.com/DragaliaLostRevival/DragaliPatch-Patches/archive/main.zip"
 
-    const val AAPT = "aapt"
-    const val ZIPALIGN = "zipalign"
+    const val AAPT = "libexecutable_aapt.so"
+    const val ZIPALIGN = "libexecutable_zipalign.so"
     const val FRAMEWORK = "framework"
     const val KEYSTORE = "dragaliafound.p12"
     const val PATCHING_DIR = "temp_patching"

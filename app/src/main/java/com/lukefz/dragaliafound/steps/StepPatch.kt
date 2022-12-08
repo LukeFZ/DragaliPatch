@@ -2,57 +2,67 @@ package com.lukefz.dragaliafound.steps
 
 import com.lukefz.dragaliafound.R
 import com.lukefz.dragaliafound.logging.StepManager
-import com.lukefz.dragaliafound.utils.Constants
-import com.lukefz.dragaliafound.utils.StorageUtil
-import com.lukefz.dragaliafound.utils.Utils
+import com.lukefz.dragaliafound.utils.*
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.patch.FileHeader
 import org.eclipse.jgit.patch.Patch
 import java.io.RandomAccessFile
-import com.lukefz.dragaliafound.utils.ApiMode
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import java.net.UnknownHostException
 import kotlin.experimental.inv
 import kotlin.io.path.exists
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
 class StepPatch(private val manager: StepManager, private val storage: StorageUtil) {
+    private val apiValues = ApiProvidedValues
+
     fun run() {
-        manager.updateStep(R.string.activity_patcher_step_server_patch)
+        manager.updateStep(R.string.activity_patcher_step_native_patch)
 
-        var addr = Constants.currentCustomUrl
+        applyNativePatches(apiValues.getApiMode())
 
-        if (!addr.matches(Regex("^(http|https)://.*$"))) {
-            addr = "https://$addr"
-        }
+        manager.onMessage("Applied native patches!")
 
-        if (!addr.endsWith("/")) {
-            addr = addr.plus("/")
-        }
-
-        if (addr.length > Constants.URL_MAX_LENGTH) {
-            throw IndexOutOfBoundsException("Server address too long: (${addr.length} > ${Constants.URL_MAX_LENGTH})")
-        }
-
-        Constants.currentCustomUrl = addr
-
-        applyNativePatches(getApiMode())
-
-        manager.onMessage("Patched server address!")
-
-        val urlWithoutPrefixAndSuffix = addr.split("://")[1].dropLast(1)
-
-        val npf = storage.appPatchDir.resolve(Constants.BAAS_URL_LOCATION)
-        val contents = npf
-            .readText()
-            .replace(Constants.DEFAULT_BAAS_URL, urlWithoutPrefixAndSuffix)
-            .replace(Constants.DEFAULT_ACCOUNTS_URL, urlWithoutPrefixAndSuffix)
-        npf.writeText(contents)
+        val urlWithoutPrefixAndSuffix = apiValues.apiUrl.split("://")[1].dropLast(1)
+        patchBaasUrl(urlWithoutPrefixAndSuffix)
+        patchPackageName(urlWithoutPrefixAndSuffix)
 
         manager.updateStep(R.string.patcher_step_patch_other)
 
+       applyGitPatches()
+
+        manager.onMessage("Finished applying patches!")
+    }
+
+    private fun patchBaasUrl(baasUrl: String) {
+        val npf = storage.appPatchDir.resolve(Constants.BAAS_URL_LOCATION)
+        val contents = npf
+            .readText()
+            .replace(Constants.DEFAULT_BAAS_URL, baasUrl)
+            .replace(Constants.DEFAULT_ACCOUNTS_URL, baasUrl)
+        npf.writeText(contents)
+    }
+
+    private fun patchPackageName(nameSuffix: String) {
+        val patchedValues = listOf("en-rUS", "ja-rJP", "zh-rCN", "zh-rHK", "zh-rTW")
+        val appNameRegex = Regex("<string name=\"app_name\">.*</string>\n")
+        for (value in patchedValues) {
+            val locValXml = storage.appPatchDir.resolve("res/${"values-".plus(value)}/strings.xml")
+            val locContents = locValXml
+                .readText()
+                .replace(appNameRegex, "")
+
+            locValXml.writeText(locContents)
+        }
+
+        val stringsXml = storage.appPatchDir.resolve(Constants.STRINGS_XML_LOCATION)
+        val contents = stringsXml
+            .readText() // NOTE: When adding localizations, pass in context or the localized patched app name directly
+            .replace(Constants.DEFAULT_APP_NAME, Constants.PATCHED_APP_NAME.plus(" - $nameSuffix"))
+
+        stringsXml.writeText(contents)
+    }
+
+    private fun applyGitPatches() {
         Git.init().setDirectory(storage.appPatchDir.toFile()).call().use { git ->
             val files = storage.downloadedPatchDir.toFile().listFiles()?.sorted()
 
@@ -76,9 +86,16 @@ class StepPatch(private val manager: StepManager, private val storage: StorageUt
                     }
                 }
             }
-
-            manager.onMessage("Finished applying patches!")
         }
+    }
+
+    private fun Long.toBytesBE(): ByteArray {
+        return byteArrayOf(
+            this.ushr(24).and(0xff).toByte(),
+            this.ushr(16).and(0xff).toByte(),
+            this.ushr(8).and(0xff).toByte(),
+            this.and(0xff).toByte()
+        )
     }
 
     private fun applyNativePatches(mode: ApiMode) {
@@ -130,30 +147,21 @@ class StepPatch(private val manager: StepManager, private val storage: StorageUt
                     val coneshellOffset = if (isArm64) Constants.Arm64Constants.CONESHELL_OFFSET else Constants.Arm32Constants.CONESHELL_OFFSET
 
                     it.seek(coneshellOffset)
-                    it.writeByte(ret.ushr(24).and(0xff).toInt())
-                    it.writeByte(ret.ushr(16).and(0xff).toInt())
-                    it.writeByte(ret.ushr(8).and(0xff).toInt())
-                    it.writeByte(ret.and(0xff).toInt())
+                    it.write(ret.toBytesBE())
                 }
                 ApiMode.COMPRESSED -> {
                     val networkPackOffset = if (isArm64) Constants.Arm64Constants.NETWORK_PACK else Constants.Arm32Constants.NETWORK_PACK
                     val networkUnpackOffset = if (isArm64) Constants.Arm64Constants.NETWORK_UNPACK else Constants.Arm32Constants.NETWORK_UNPACK
 
                     it.seek(networkPackOffset)
-                    it.writeByte(ret.ushr(24).and(0xff).toInt())
-                    it.writeByte(ret.ushr(16).and(0xff).toInt())
-                    it.writeByte(ret.ushr(8).and(0xff).toInt())
-                    it.writeByte(ret.and(0xff).toInt())
+                    it.write(ret.toBytesBE())
 
                     it.seek(networkUnpackOffset)
-                    it.writeByte(ret.ushr(24).and(0xff).toInt())
-                    it.writeByte(ret.ushr(16).and(0xff).toInt())
-                    it.writeByte(ret.ushr(8).and(0xff).toInt())
-                    it.writeByte(ret.and(0xff).toInt())
+                    it.write(ret.toBytesBE())
                 }
                 ApiMode.CONESHELL -> {
                     val pubkeyOffset = if (isArm64) Constants.Arm64Constants.CONESHELL_PUBKEY else Constants.Arm32Constants.CONESHELL_PUBKEY
-                    val pubkey = getPubKey()
+                    val pubkey = apiValues.getPubKey()
 
                     it.seek(pubkeyOffset)
                     it.write(pubkey)
@@ -164,66 +172,7 @@ class StepPatch(private val manager: StepManager, private val storage: StorageUt
             val sunsetPatch = if (isArm64) Constants.Arm64Constants.SUNSET_PATCH else Constants.Arm32Constants.SUNSET_PATCH
 
             it.seek(sunsetOffset)
-            it.writeByte(sunsetPatch.ushr(24).and(0xff).toInt())
-            it.writeByte(sunsetPatch.ushr(16).and(0xff).toInt())
-            it.writeByte(sunsetPatch.ushr(8).and(0xff).toInt())
-            it.writeByte(sunsetPatch.and(0xff).toInt())
+            it.write(sunsetPatch.toBytesBE())
         }
-    }
-
-    private fun getApiMode(): ApiMode {
-        val client = OkHttpClient()
-        try {
-            val request = Request.Builder()
-                .url(Constants.currentCustomUrl.plus(Constants.APIMODE_ENDPOINT))
-                .build()
-
-            client.newCall(request).execute().use {
-                if (it.isSuccessful && it.body != null)
-                    return ApiMode.valueOf(it.body!!.string())
-            }
-        } catch (_: Exception) { }
-
-        return ApiMode.RAW
-    }
-
-    private fun getPubKey(): ByteArray {
-        val client = OkHttpClient()
-        try {
-            val request = Request.Builder()
-                .url(Constants.currentCustomUrl.plus(Constants.CONESHELL_ENDPOINT))
-                .build()
-
-            client.newCall(request).execute().use {
-                if (it.body != null) {
-                    if (it.body!!.bytes().size == 32)
-                        return it.body!!.bytes()
-                    else
-                        throw IllegalAccessException("Server provided pubkey that was not 32 bytes in length.")
-                }
-            }
-        } catch (_: Exception) { }
-
-        throw IllegalAccessException("Could not get server pubkey for Coneshell-enabled API.")
-    }
-
-    private fun getCdnUrl(): String {
-        val client = OkHttpClient()
-        try {
-            val request = Request.Builder()
-                .url(Constants.currentCustomUrl.plus(Constants.CDNURL_ENDPOINT))
-                .build()
-
-            client.newCall(request).execute().use {
-                if (it.isSuccessful && it.body != null) {
-                    if (it.body!!.string().length > 0x24)
-                        return it.body!!.string()
-                    else
-                        throw IllegalAccessException("Server provided cdn url that was too long.")
-                }
-            }
-        } catch (_: UnknownHostException) { }
-
-        return Constants.DEFAULT_CDN_URL
     }
 }

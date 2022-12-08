@@ -17,7 +17,8 @@ class MainScreenViewModel(private val app: Application) : AndroidViewModel(app) 
     var originalAppIcon: Drawable? = null
     var patchedAppIcon: Drawable? = null
     var isPatchable = false
-    var customServerUrl = mutableStateOf(Constants.DEFAULT_CUSTOM_URL)
+    var customServerUrl = mutableStateOf("")
+    //var enableClearDeviceAccountButton = false
 
     init {
         val packageManager = app.packageManager
@@ -56,6 +57,20 @@ class MainScreenViewModel(private val app: Application) : AndroidViewModel(app) 
         } catch (_: Exception) {
             patchedAppInfo = "\nPatched app not installed!\n"
         }
+    }
+
+    fun estimateApiUrlLength() : Int {
+        var length = customServerUrl.value.length
+
+        if (!customServerUrl.value.matches(Regex("^(http|https)://.*$"))) {
+            length += 8
+        }
+
+        if (!customServerUrl.value.endsWith("/")) {
+            length += 1
+        }
+
+        return length
     }
 
     fun openWebsite(url: String) {

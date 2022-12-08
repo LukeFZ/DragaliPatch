@@ -21,8 +21,8 @@
     <string name="activity_patcher_step_recompile">Recompile</string>
     <string name="activity_patcher_step_sign">Sign</string>
     <string name="activity_patcher_step_sign_setup">Setting up…</string>
-    <string name="activity_patcher_step_signing" translatable="false">Signing…</string>
-    <string name="activity_patcher_step_server_patch">Patching server address…</string>
+    <string name="activity_patcher_step_signing">Signing…</string>
+    <string name="activity_patcher_step_native_patch">Applying native patches..</string>
     <string name="activity_main_custom_server">Server Address</string>
     <string name="patcher_back">Go back</string>
     <string name="activity_patcher_step_server_patch_completed">Patched server address!</string>

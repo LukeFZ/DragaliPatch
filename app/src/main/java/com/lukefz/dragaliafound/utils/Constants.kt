@@ -7,10 +7,7 @@ object Constants {
     const val SUPPORTED_PACKAGE_VERSION = 173
 
     const val URL_MAX_LENGTH = 40
-    const val DEFAULT_CUSTOM_URL = "https://prod.dragaliafound.lukefz.xyz"
     const val DEFAULT_CDN_URL = "https://dragalialost.akamaized.net"
-
-    var currentCustomUrl = DEFAULT_CUSTOM_URL
 
     object Arm64Constants {
         const val RET = 0xc0035fd6L
@@ -47,6 +44,10 @@ object Constants {
     const val BAAS_URL_LOCATION = "assets/npf.json"
     const val DEFAULT_BAAS_URL = "48cc81cdb8de30e061928f56e9bd4b4d.baas.nintendo.com"
     const val DEFAULT_ACCOUNTS_URL = "accounts.nintendo.com"
+
+    const val STRINGS_XML_LOCATION = "res/values/strings.xml"
+    const val DEFAULT_APP_NAME = "Dragalia Lost"
+    const val PATCHED_APP_NAME = "Dragalia Found"
 
     const val GITHUB_URL = "https://github.com/LukeFZ/DragaliPatch"
     const val PROJECT_EARTH_GITHUB_URL = "https://github.com/Project-Earth-Team/PatcherApp"

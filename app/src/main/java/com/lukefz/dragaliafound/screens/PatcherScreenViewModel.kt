@@ -120,11 +120,11 @@ class PatcherScreenViewModel(private val app: Application) : AndroidViewModel(ap
                         }
                         updateProgress(0.4f)
                         patch.run()
-                        updateProgress(0.6f)
+                        updateProgress(0.75f)
                         recompile.run()
-                        updateProgress(0.7f)
+                        updateProgress(0.9f)
                         align.run()
-                        updateProgress(0.8f)
+                        updateProgress(0.95f)
                         sign.run()
                         updateProgress(1.0f)
 

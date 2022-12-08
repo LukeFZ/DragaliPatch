@@ -82,7 +82,7 @@ class StepPatch(private val manager: StepManager, private val storage: StorageUt
     }
 
     private fun applyNativePatches(mode: ApiMode) {
-        val obfuscatedUrl = Utils.obfuscateUrl(Constants.currentCustomUrl)
+        val obfuscatedUrl = Utils.obfuscateUrl(apiValues.apiUrl)
 
         val isArm64 = storage.appPatchDir.resolve("lib/arm64-v8a").exists()
         val libName = if (isArm64) "arm64-v8a" else "armeabi-v7a"
@@ -91,14 +91,14 @@ class StepPatch(private val manager: StepManager, private val storage: StorageUt
         val urlOffset = if (isArm64) Constants.Arm64Constants.URL_OFFSET else Constants.Arm32Constants.URL_OFFSET
         val urlLengthOffset = if (isArm64) Constants.Arm64Constants.URL_LENGTH_OFFSET else Constants.Arm32Constants.URL_LENGTH_OFFSET
 
-        val cdnUrl = getCdnUrl()
+        val cdnUrl = apiValues.getCdnUrl()
 
         RandomAccessFile(
             storage.appPatchDir.resolve("lib/$libName/libil2cpp.so").toString(),
             "rw"
         ).use {
             it.seek(urlLengthOffset)
-            it.writeByte(Constants.currentCustomUrl.length.toByte().inv().toInt())
+            it.writeByte(apiValues.apiUrl.length.toByte().inv().toInt())
 
             it.seek(urlOffset)
             it.write(obfuscatedUrl)

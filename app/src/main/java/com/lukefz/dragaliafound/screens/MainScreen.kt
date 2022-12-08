@@ -21,6 +21,7 @@ import com.lukefz.dragaliafound.R
 import com.lukefz.dragaliafound.composable.AppContainer
 import com.lukefz.dragaliafound.composable.SpacedLine
 import com.lukefz.dragaliafound.navigation.NavScreens
+import com.lukefz.dragaliafound.utils.ApiProvidedValues
 import com.lukefz.dragaliafound.utils.Constants
 
 @Composable
@@ -42,9 +43,12 @@ fun MainScreen(navController: NavController, model: MainScreenViewModel = viewMo
             )
         },
         floatingActionButton = {
-            if (model.isPatchable) {
+            if (model.isPatchable &&  model.estimateApiUrlLength() <= Constants.URL_MAX_LENGTH) {
                 ExtendedFloatingActionButton(
-                    onClick = { Constants.currentCustomUrl = model.customServerUrl.value; navController.navigate(NavScreens.Patcher.route) },
+                    onClick = {
+                        ApiProvidedValues.apiUrl = model.customServerUrl.value
+                        navController.navigate(NavScreens.Patcher.route)
+                    },
                     icon = { Icon(Icons.Filled.PlayArrow, "Start button") },
                     text = { Text(stringResource(R.string.activity_patcher_step_patch)) },
                 )
@@ -83,6 +87,7 @@ fun MainScreen(navController: NavController, model: MainScreenViewModel = viewMo
                                     if (it.length <= Constants.URL_MAX_LENGTH)
                                         model.customServerUrl.value = it
                     },
+                    isError = model.estimateApiUrlLength() > Constants.URL_MAX_LENGTH,
                     label = { Text(stringResource(R.string.activity_main_custom_server)) }
                 )
 
@@ -130,7 +135,7 @@ fun MainScreen(navController: NavController, model: MainScreenViewModel = viewMo
                         }
                     )
 
-                    SpacedLine(4.dp)
+                    SpacedLine(8.dp)
 
                     Text(
                         text = stringResource(R.string.activity_about_special_thanks),

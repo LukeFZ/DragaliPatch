@@ -57,7 +57,7 @@ class StepPatch(private val manager: StepManager, private val storage: StorageUt
         val stringsXml = storage.appPatchDir.resolve(Constants.STRINGS_XML_LOCATION)
         val contents = stringsXml
             .readText() // NOTE: When adding localizations, pass in context or the localized patched app name directly
-            .replace(Constants.DEFAULT_APP_NAME, Constants.PATCHED_APP_NAME.plus(" - $nameSuffix"))
+            .replace(Constants.DEFAULT_APP_NAME, Constants.PATCHED_APP_NAME.plus("\n$nameSuffix"))
 
         stringsXml.writeText(contents)
     }

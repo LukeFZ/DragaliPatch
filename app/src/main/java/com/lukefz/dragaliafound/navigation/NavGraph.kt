@@ -16,6 +16,6 @@ fun NavGraph(controller: NavHostController) {
     ) {
         composable(route = NavScreens.Main.route) { MainScreen(controller) }
         composable(route = NavScreens.Patcher.route) { PatcherScreen(controller) }
-        composable(route = NavScreens.About.route) { AboutScreen(controller) }
+        composable(route = NavScreens.About.route) { AboutScreen() }
     }
 }

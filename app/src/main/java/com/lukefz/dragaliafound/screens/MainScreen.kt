@@ -43,7 +43,7 @@ fun MainScreen(navController: NavController, model: MainScreenViewModel = viewMo
             )
         },
         floatingActionButton = {
-            if (model.isPatchable &&  model.estimateApiUrlLength() <= Constants.URL_MAX_LENGTH) {
+            if (model.isPatchable && model.estimateApiUrlLength() <= Constants.URL_MAX_LENGTH && serverUrl.isNotEmpty()) {
                 ExtendedFloatingActionButton(
                     onClick = {
                         ApiProvidedValues.apiUrl = model.customServerUrl.value
@@ -90,6 +90,23 @@ fun MainScreen(navController: NavController, model: MainScreenViewModel = viewMo
                     isError = model.estimateApiUrlLength() > Constants.URL_MAX_LENGTH,
                     label = { Text(stringResource(R.string.activity_main_custom_server)) }
                 )
+
+                /*Spacer(Modifier.size(4.dp))
+
+                Button(
+                    modifier = Modifier
+                        .padding(
+                            top = 4.dp,
+                            start = 2.dp,
+                            end = 2.dp
+                        )
+                        .fillMaxWidth(),
+                    onClick = { model.clearDeviceAccount() },
+                    enabled = model.enableClearDeviceAccountButton,
+
+                ) {
+                    Text(stringResource(R.string.utility_clear_device_acount))
+                }*/
 
                 SpacedLine(4.dp)
 

@@ -2,7 +2,6 @@ package com.lukefz.dragaliafound.utils
 
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import java.net.UnknownHostException
 
 object ApiProvidedValues {
     private val client: OkHttpClient = OkHttpClient()
@@ -78,7 +77,7 @@ object ApiProvidedValues {
                         throw IllegalAccessException("Server provided cdn url that was too long.")
                 }
             }
-        } catch (_: UnknownHostException) { }
+        } catch (_: Exception) { }
 
         return Constants.DEFAULT_CDN_URL
     }

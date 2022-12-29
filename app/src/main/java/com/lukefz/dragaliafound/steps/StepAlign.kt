@@ -33,6 +33,7 @@ class StepAlign(private val manager: StepManager, private val storage: StorageUt
 
                     val neededAlignment = alignment - (offset % alignment)
                     if (neededAlignment != alignment) {
+                        offset += neededAlignment
                         val newExtra = ByteArray(extraSize + neededAlignment)
                         if (extraSize != 0) {
                             val existingExtra = newEntry.extra
@@ -42,7 +43,7 @@ class StepAlign(private val manager: StepManager, private val storage: StorageUt
                     }
                 }
 
-                zout.putNextEntry(entry)
+                zout.putNextEntry(newEntry)
 
                 if (!newEntry.isDirectory) {
                     offset += newEntry.compressedSize.toInt()

@@ -1,14 +1,18 @@
 package com.lukefz.dragaliafound.utils
 
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.Request
 
 object ApiProvidedValues {
-    private val client: OkHttpClient = OkHttpClient()
-
     var apiUrl: String = ""
         set(value) { field = parseApiUrl(value) }
 
+    val isHttp: Boolean
+        get() = apiUrl.startsWith("http://")
+
+    var config: DragalipatchConfig = DragalipatchConfig()
 
     private fun parseApiUrl(url: String): String {
         var addr = url
@@ -28,57 +32,25 @@ object ApiProvidedValues {
         return addr
     }
 
-    fun getApiMode(): ApiMode {
+    fun getConfig() {
         val client = OkHttpClient()
         try {
             val request = Request.Builder()
-                .url(apiUrl.plus(Constants.APIMODE_ENDPOINT))
+                .url(apiUrl.plus(Constants.CONFIG_ENDPOINT))
                 .build()
 
             client.newCall(request).execute().use {
                 if (it.isSuccessful && it.body != null)
-                    return ApiMode.valueOf(it.body!!.string())
+                    config = Json.decodeFromString(it.body!!.string())
             }
-        } catch (_: Exception) { }
+        } catch (_: Exception) {
+            config = DragalipatchConfig()
+        }
 
-        return ApiMode.RAW
-    }
+        if (config.mode == ApiMode.CONESHELL && config.coneshellKey == null)
+            throw IllegalAccessException("Could not get server public key for Coneshell-enabled API.")
 
-    fun getPubKey(): ByteArray {
-        try {
-            val request = Request.Builder()
-                .url(apiUrl.plus(Constants.CONESHELL_ENDPOINT))
-                .build()
-
-            client.newCall(request).execute().use {
-                if (it.body != null) {
-                    if (it.body!!.bytes().size == 32)
-                        return it.body!!.bytes()
-                    else
-                        throw IllegalAccessException("Server provided pubkey that was not 32 bytes in length.")
-                }
-            }
-        } catch (_: Exception) { }
-
-        throw IllegalAccessException("Could not get server pubkey for Coneshell-enabled API.")
-    }
-
-    fun getCdnUrl(): String {
-        try {
-            val request = Request.Builder()
-                .url(apiUrl.plus(Constants.CDNURL_ENDPOINT))
-                .build()
-
-            client.newCall(request).execute().use {
-                if (it.isSuccessful && it.body != null) {
-                    if (it.body!!.string().length > 0x24)
-                        return it.body!!.string()
-                    else
-                        throw IllegalAccessException("Server provided cdn url that was too long.")
-                }
-            }
-        } catch (_: Exception) { }
-
-        return Constants.DEFAULT_CDN_URL
+        if (config.cdnUrl.length > 0x24)
+            throw IllegalAccessException("Server provided CDN url that was too long.")
     }
 }

@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
+    id 'org.jetbrains.kotlin.plugin.serialization'
 }
 
 android {
@@ -84,4 +85,6 @@ dependencies {
     implementation "com.github.LukeFZ:android-awt:8d8aa705b1"
     implementation "com.android.tools.build:apksig:7.3.1"
     implementation "com.github.rtm516.jgit:org.eclipse.jgit:61810ad68a"
+
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1'
 }

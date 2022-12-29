@@ -1,5 +1,6 @@
 package com.lukefz.dragaliafound.steps
 
+import android.util.Base64
 import com.lukefz.dragaliafound.R
 import com.lukefz.dragaliafound.logging.StepManager
 import com.lukefz.dragaliafound.utils.*
@@ -18,12 +19,12 @@ class StepPatch(private val manager: StepManager, private val storage: StorageUt
     fun run() {
         manager.updateStep(R.string.activity_patcher_step_native_patch)
 
-        applyNativePatches(apiValues.getApiMode())
+        applyNativePatches(apiValues.config.mode)
 
         manager.onMessage("Applied native patches!")
 
         val urlWithoutPrefixAndSuffix = apiValues.apiUrl.split("://")[1].dropLast(1)
-        patchBaasUrl(urlWithoutPrefixAndSuffix)
+        patchBaasUrl(urlWithoutPrefixAndSuffix, apiValues.config.useUnifiedLogin, apiValues.isHttp)
         patchPackageName(urlWithoutPrefixAndSuffix)
 
         manager.updateStep(R.string.patcher_step_patch_other)
@@ -33,12 +34,17 @@ class StepPatch(private val manager: StepManager, private val storage: StorageUt
         manager.onMessage("Finished applying patches!")
     }
 
-    private fun patchBaasUrl(baasUrl: String) {
+    private fun patchBaasUrl(baasUrl: String, useBaas: Boolean, isHttp: Boolean) {
+        val replacementUrl = if (useBaas) Constants.BAAS_URL else baasUrl
         val npf = storage.appPatchDir.resolve(Constants.BAAS_URL_LOCATION)
-        val contents = npf
+        var contents = npf
             .readText()
-            .replace(Constants.DEFAULT_BAAS_URL, baasUrl)
-            .replace(Constants.DEFAULT_ACCOUNTS_URL, baasUrl)
+            .replace(Constants.DEFAULT_BAAS_URL, replacementUrl)
+            .replace(Constants.DEFAULT_ACCOUNTS_URL, replacementUrl)
+
+        if (!useBaas && isHttp)
+            contents = contents.replace("\"purchaseMock\":false", "\"purchaseMock\":false, \"useHttp\":true")
+
         npf.writeText(contents)
     }
 
@@ -108,7 +114,7 @@ class StepPatch(private val manager: StepManager, private val storage: StorageUt
         val urlOffset = if (isArm64) Constants.Arm64Constants.URL_OFFSET else Constants.Arm32Constants.URL_OFFSET
         val urlLengthOffset = if (isArm64) Constants.Arm64Constants.URL_LENGTH_OFFSET else Constants.Arm32Constants.URL_LENGTH_OFFSET
 
-        val cdnUrl = apiValues.getCdnUrl()
+        val cdnUrl = apiValues.config.cdnUrl
 
         RandomAccessFile(
             storage.appPatchDir.resolve("lib/$libName/libil2cpp.so").toString(),
@@ -160,11 +166,13 @@ class StepPatch(private val manager: StepManager, private val storage: StorageUt
                     it.write(ret.toBytesBE())
                 }
                 ApiMode.CONESHELL -> {
-                    val pubkeyOffset = if (isArm64) Constants.Arm64Constants.CONESHELL_PUBKEY else Constants.Arm32Constants.CONESHELL_PUBKEY
-                    val pubkey = apiValues.getPubKey()
+                    val publicKeyOffset = if (isArm64) Constants.Arm64Constants.CONESHELL_PUBKEY else Constants.Arm32Constants.CONESHELL_PUBKEY
+                    val publicKey = Base64.decode(apiValues.config.coneshellKey, 0)
+                    if (publicKey.size != 32)
+                        throw IllegalArgumentException("Provided coneshell public key was not the required 32 bytes in size.")
 
-                    it.seek(pubkeyOffset)
-                    it.write(pubkey)
+                    it.seek(publicKeyOffset)
+                    it.write(publicKey)
                 }
             }
 

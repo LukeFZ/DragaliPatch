@@ -49,6 +49,7 @@ object Constants {
     const val DEFAULT_APP_NAME = "Dragalia Lost"
     const val PATCHED_APP_NAME = "Dragalia Found"
 
+    const val BAAS_URL = "https://baas.lukefz.xyz"
     const val GITHUB_URL = "https://github.com/LukeFZ/DragaliPatch"
     const val PROJECT_EARTH_GITHUB_URL = "https://github.com/Project-Earth-Team/PatcherApp"
     const val PATCH_DOWNLOAD_URL = "https://github.com/DragaliaLostRevival/DragaliPatch-Patches/archive/main.zip"
@@ -65,7 +66,5 @@ object Constants {
     const val UNSIGNED_SUFFIX = "_unsigned"
     const val ALIGNED_SUFFIX = "_aligned"
 
-    const val APIMODE_ENDPOINT = "/dragalipatch/mode"
-    const val CONESHELL_ENDPOINT = "/dragalipatch/coneshell_pubkey"
-    const val CDNURL_ENDPOINT = "/dragalipatch/cdn_url"
+    const val CONFIG_ENDPOINT = "/dragalipatch/config"
 }

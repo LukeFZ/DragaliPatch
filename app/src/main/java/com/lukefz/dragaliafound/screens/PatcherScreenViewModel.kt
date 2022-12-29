@@ -10,6 +10,7 @@ import androidx.lifecycle.viewModelScope
 import com.lukefz.dragaliafound.R
 import com.lukefz.dragaliafound.logging.StepManager
 import com.lukefz.dragaliafound.steps.*
+import com.lukefz.dragaliafound.utils.ApiProvidedValues
 import com.lukefz.dragaliafound.utils.PatcherState
 import com.lukefz.dragaliafound.utils.StorageUtil
 import com.lukefz.dragaliafound.utils.Utils
@@ -53,39 +54,6 @@ class PatcherScreenViewModel(private val app: Application) : AndroidViewModel(ap
         app.startActivity(Utils.configureInstallIntent(uri))
     }
 
-    /*override fun installPatchedApp() {
-        val installer = app.applicationContext.packageManager.packageInstaller
-        val params = PackageInstaller.SessionParams(PackageInstaller.SessionParams.MODE_FULL_INSTALL)
-        val sessionId = installer.createSession(params)
-
-        installer.openSession(sessionId).use {session ->
-            storage.signedApk.inputStream().use { fileInput ->
-                session.openWrite(storage.signedApk.name, 0, storage.signedApk.length()).use {
-                    val buf = ByteArray(8192)
-                    var count: Int
-
-                    while (true) {
-                        count = fileInput.read(buf)
-                        if (count == -1)
-                            break
-                        it.write(buf, 0, count)
-                    }
-
-                    session.fsync(it)
-                }
-            }
-
-            val intent = PendingIntent.getBroadcast(
-                app.applicationContext,
-                sessionId,
-                Intent(),
-                PendingIntent.FLAG_IMMUTABLE)
-                .intentSender
-
-            session.commit(intent)
-        }
-    }*/
-
     fun startPatch() {
         // Fix for OSDetection in apktool
         System.setProperty(
@@ -101,6 +69,8 @@ class PatcherScreenViewModel(private val app: Application) : AndroidViewModel(ap
 
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
+                ApiProvidedValues.getConfig()
+
                 val download = StepDownloadPatch(ref, storage)
                 val decompile = StepDecompile(ref, storage)
                 val patchManifest = StepPatchSplitManifest(ref, storage)
@@ -120,7 +90,7 @@ class PatcherScreenViewModel(private val app: Application) : AndroidViewModel(ap
                         }
                         updateProgress(0.4f)
                         patch.run()
-                        updateProgress(0.6f)
+                        updateProgress(0.5f)
                         recompile.run()
                         updateProgress(0.8f)
                         align.run()

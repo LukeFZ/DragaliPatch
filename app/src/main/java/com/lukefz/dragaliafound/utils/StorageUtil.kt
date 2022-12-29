@@ -17,7 +17,6 @@ class StorageUtil(ctx: Context) {
     val signedApk: File = ctx.getExternalFilesDir("")!!.toPath().resolve(Constants.PATCHED_PACKAGE_NAME.plus(Constants.APK_EXTENSION)).toFile()
 
     val aaptPath: File = Path(ctx.applicationInfo.nativeLibraryDir).resolve(Constants.AAPT).toFile()
-    val zipalignPath: File = Path(ctx.applicationInfo.nativeLibraryDir).resolve(Constants.ZIPALIGN).toFile()
     val keystorePath: File = ctx.externalCacheDir!!.toPath().resolve(Constants.KEYSTORE).toFile()
     val frameworkDir: String = ctx.externalCacheDir!!.toPath().resolve(Constants.FRAMEWORK).toString()
 
@@ -33,7 +32,6 @@ class StorageUtil(ctx: Context) {
     init {
         try {
             aaptPath.setExecutable(true)
-            zipalignPath.setExecutable(true)
         } catch (_: Exception) {
 
         }

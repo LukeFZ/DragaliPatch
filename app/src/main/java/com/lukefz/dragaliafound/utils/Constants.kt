@@ -49,7 +49,7 @@ object Constants {
     const val DEFAULT_APP_NAME = "Dragalia Lost"
     const val PATCHED_APP_NAME = "Dragalia Found"
 
-    const val BAAS_URL = "https://baas.lukefz.xyz"
+    const val BAAS_URL = "baas.lukefz.xyz"
     const val GITHUB_URL = "https://github.com/LukeFZ/DragaliPatch"
     const val PROJECT_EARTH_GITHUB_URL = "https://github.com/Project-Earth-Team/PatcherApp"
     const val PATCH_DOWNLOAD_URL = "https://github.com/DragaliaLostRevival/DragaliPatch-Patches/archive/main.zip"

@@ -66,5 +66,5 @@ object Constants {
     const val UNSIGNED_SUFFIX = "_unsigned"
     const val ALIGNED_SUFFIX = "_aligned"
 
-    const val CONFIG_ENDPOINT = "/dragalipatch/config"
+    const val CONFIG_ENDPOINT = "dragalipatch/config"
 }

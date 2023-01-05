@@ -32,7 +32,7 @@ object ApiProvidedValues {
         return addr
     }
 
-    fun getConfig() {
+    fun getConfig(): Boolean {
         val client = OkHttpClient()
         try {
             val request = Request.Builder()
@@ -45,6 +45,7 @@ object ApiProvidedValues {
             }
         } catch (_: Exception) {
             config = DragalipatchConfig()
+            return false
         }
 
         if (config.mode == ApiMode.CONESHELL && config.coneshellKey == null)
@@ -52,5 +53,7 @@ object ApiProvidedValues {
 
         if (config.cdnUrl.length > 0x24)
             throw IllegalAccessException("Server provided CDN url that was too long.")
+
+        return true
     }
 }

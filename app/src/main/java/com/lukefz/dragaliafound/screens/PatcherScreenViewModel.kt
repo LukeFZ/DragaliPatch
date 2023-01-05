@@ -80,6 +80,10 @@ class PatcherScreenViewModel(private val app: Application) : AndroidViewModel(ap
                 val sign = StepSign(ref, storage)
 
                 runBlocking {
+                    val retrieveConfigResult = ApiProvidedValues.getConfig()
+                    if (!retrieveConfigResult)
+                        onMessage("WARNING: Failed to download config from API server! Using fallback values.")
+
                     try {
                         download.run()
                         updateProgress(0.2f)

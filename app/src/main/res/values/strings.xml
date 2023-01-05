@@ -24,7 +24,7 @@
     <string name="activity_patcher_step_signing">Signing…</string>
     <string name="activity_patcher_step_native_patch">Applying native patches..</string>
     <string name="activity_main_custom_server">Server Address</string>
-    <string name="patcher_back">Go back</string>
+    <string name="patcher_share_error">Share</string>
     <string name="activity_patcher_step_server_patch_completed">Patched server address!</string>
     <string name="patcher_step_patch_other">Installing other patches…</string>
     <string name="activity_patcher_step_download">Downloading patches…</string>

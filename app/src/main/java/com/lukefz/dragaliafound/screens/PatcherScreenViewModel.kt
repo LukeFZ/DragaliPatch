@@ -1,6 +1,7 @@
 package com.lukefz.dragaliafound.screens
 
 import android.app.Application
+import android.content.Intent
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -54,6 +55,15 @@ class PatcherScreenViewModel(private val app: Application) : AndroidViewModel(ap
         app.startActivity(Utils.configureInstallIntent(uri))
     }
 
+    fun shareLog() {
+        val intent = Intent(Intent.ACTION_SEND)
+        intent.putExtra(Intent.EXTRA_TEXT, state.logMessages)
+        intent.type = "text/plain"
+        val shareIntent = Intent.createChooser(intent, null)
+        shareIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        app.startActivity(shareIntent)
+    }
+
     fun startPatch() {
         // Fix for OSDetection in apktool
         System.setProperty(
@@ -69,8 +79,6 @@ class PatcherScreenViewModel(private val app: Application) : AndroidViewModel(ap
 
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                ApiProvidedValues.getConfig()
-
                 val download = StepDownloadPatch(ref, storage)
                 val decompile = StepDecompile(ref, storage)
                 val patchManifest = StepPatchSplitManifest(ref, storage)

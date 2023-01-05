@@ -6,8 +6,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,8 +17,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.lukefz.dragaliafound.R
-import com.lukefz.dragaliafound.navigation.NavScreens
 
+@Suppress("UNUSED_PARAMETER")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PatcherScreen(controller: NavController, model: PatcherScreenViewModel = viewModel()) {
@@ -56,21 +56,21 @@ fun PatcherScreen(controller: NavController, model: PatcherScreenViewModel = vie
                 ExtendedFloatingActionButton(
                     onClick = {
                         if (state.hasFailed) {
-                            controller.navigate(NavScreens.Main.route)
+                            model.shareLog()
                         } else {
                             model.installPatchedApp()
                         }
                     },
                     icon = {
                         if (state.hasFailed)
-                            Icon(Icons.Filled.ArrowBack, "Back arrow")
+                            Icon(Icons.Filled.Share, "Share the error")
                         else
                             Icon(Icons.Filled.Done, "Done symbol")
 
                     },
                     text = {
                         if (state.hasFailed)
-                            Text(stringResource(R.string.patcher_back))
+                            Text(stringResource(R.string.patcher_share_error))
                         else
                             Text(stringResource(R.string.install))
                         //else

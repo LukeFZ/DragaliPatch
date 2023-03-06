@@ -27,7 +27,8 @@ fun PatcherScreen(controller: NavController, model: PatcherScreenViewModel = vie
 
     val animatedProgress by animateFloatAsState(
         targetValue = state.currentProgress,
-        animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec
+        animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec,
+        label = "Patch progress"
     )
 
     LaunchedEffect(true) {

@@ -8,6 +8,7 @@ import java.io.BufferedWriter
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
@@ -63,17 +64,21 @@ object Utils {
             if (!output.exists()) output.createNewFile()
 
             output.outputStream().use { out ->
-                val buffer = ByteArray(1024)
-                var len: Int
-                while (true) {
-                    len = input.read(buffer, 0, buffer.size)
-                    if (len == -1)
-                        break
-                    out.write(buffer, 0, len)
-                }
+                copyFile(input, out)
             }
         } catch (ex: Exception) {
             ex.printStackTrace()
+        }
+    }
+
+    fun copyFile(input: InputStream, out: FileOutputStream) {
+        val buffer = ByteArray(1024)
+        var len: Int
+        while (true) {
+            len = input.read(buffer, 0, buffer.size)
+            if (len == -1)
+                break
+            out.write(buffer, 0, len)
         }
     }
 

@@ -1,5 +1,7 @@
 package com.lukefz.dragaliafound.screens
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.ClickableText
 import androidx.compose.material.icons.Icons
@@ -10,11 +12,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.lukefz.dragaliafound.R
@@ -28,6 +33,14 @@ import com.lukefz.dragaliafound.utils.Constants
 @OptIn(ExperimentalMaterial3Api::class)
 fun MainScreen(navController: NavController, model: MainScreenViewModel = viewModel()) {
     val serverUrl by remember { model.customServerUrl }
+    val context = LocalContext.current
+
+    val intentLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocumentTree()
+    ) {selectedUri ->
+        if (selectedUri != null)
+            model.backupOriginalGame(DocumentFile.fromTreeUri(context, selectedUri)!!)
+    }
 
     Scaffold(
         topBar = {
@@ -91,7 +104,7 @@ fun MainScreen(navController: NavController, model: MainScreenViewModel = viewMo
                     label = { Text(stringResource(R.string.activity_main_custom_server)) }
                 )
 
-                /*Spacer(Modifier.size(4.dp))
+                SpacedLine(4.dp)
 
                 Button(
                     modifier = Modifier
@@ -101,12 +114,14 @@ fun MainScreen(navController: NavController, model: MainScreenViewModel = viewMo
                             end = 2.dp
                         )
                         .fillMaxWidth(),
-                    onClick = { model.clearDeviceAccount() },
-                    enabled = model.enableClearDeviceAccountButton,
+                    onClick = {
+                              intentLauncher.launch(null)
+                    },
+                    enabled = model.isPatchable,
 
                 ) {
-                    Text(stringResource(R.string.utility_clear_device_acount))
-                }*/
+                    Text(stringResource(R.string.app_backup_button))
+                }
 
                 SpacedLine(4.dp)
 
@@ -157,12 +172,20 @@ fun MainScreen(navController: NavController, model: MainScreenViewModel = viewMo
                     Text(
                         text = stringResource(R.string.activity_about_special_thanks),
                         style = MaterialTheme.typography.headlineSmall,
+                        textAlign = TextAlign.Center
                     )
 
                     Spacer(Modifier.size(4.dp))
 
-                    Text(stringResource(R.string.activity_about_custom_server_creators))
-                    Text(stringResource(R.string.activity_about_custom_server_creators_reason))
+                    Text(
+                        text = stringResource(R.string.activity_about_custom_server_creators),
+                        textAlign = TextAlign.Center
+                    )
+
+                    Text(
+                        text = stringResource(R.string.activity_about_custom_server_creators_reason),
+                        textAlign = TextAlign.Center
+                    )
                 }
             }
         }

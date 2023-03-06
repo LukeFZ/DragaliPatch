@@ -36,4 +36,8 @@
     <string name="install">Install</string>
     <string name="activity_patcher_completed">Completed!</string>
     <string name="activity_patcher_title_completed">Patching completed!</string>
+    <string name="app_backup_button">Backup original app</string>
+    <string name="app_backup_succeeded">Successfully backed up original app!</string>
+    <string name="app_backup_failed">Failed to backup original app.</string>
+    <string name="patched_app_name">Dragalia Found - %s</string>
 </resources>

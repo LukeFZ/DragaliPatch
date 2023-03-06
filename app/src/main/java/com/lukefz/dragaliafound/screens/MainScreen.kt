@@ -33,6 +33,8 @@ import com.lukefz.dragaliafound.utils.Constants
 @OptIn(ExperimentalMaterial3Api::class)
 fun MainScreen(navController: NavController, model: MainScreenViewModel = viewModel()) {
     val serverUrl by remember { model.customServerUrl }
+    val cdnUrl by remember { model.customCdnUrl }
+
     val context = LocalContext.current
 
     val intentLauncher = rememberLauncherForActivityResult(
@@ -56,10 +58,16 @@ fun MainScreen(navController: NavController, model: MainScreenViewModel = viewMo
             )
         },
         floatingActionButton = {
-            if (model.isPatchable && model.estimateApiUrlLength() <= Constants.URL_MAX_LENGTH && serverUrl.isNotEmpty()) {
+            if (model.isPatchable &&
+                model.estimateUrlLength(serverUrl) <= Constants.URL_MAX_LENGTH &&
+                serverUrl.isNotEmpty() &&
+                (!model.showCdnUrlBox || (
+                        model.estimateUrlLength(cdnUrl) <= Constants.CDN_URL_MAX_LENGTH &&
+                        cdnUrl.isNotEmpty()))) {
                 ExtendedFloatingActionButton(
                     onClick = {
                         ApiProvidedValues.apiUrl = model.customServerUrl.value
+                        if (model.showCdnUrlBox) ApiProvidedValues.cdnUrl = model.customCdnUrl.value
                         navController.navigate(NavScreens.Patcher.route)
                     },
                     icon = { Icon(Icons.Filled.PlayArrow, "Start button") },
@@ -100,9 +108,31 @@ fun MainScreen(navController: NavController, model: MainScreenViewModel = viewMo
                                     if (it.length <= Constants.URL_MAX_LENGTH)
                                         model.customServerUrl.value = it
                     },
-                    isError = model.estimateApiUrlLength() > Constants.URL_MAX_LENGTH,
+                    isError = model.estimateUrlLength(serverUrl) > Constants.URL_MAX_LENGTH,
                     label = { Text(stringResource(R.string.activity_main_custom_server)) }
                 )
+
+                if (model.showCdnUrlBox) {
+                    Spacer(Modifier.size(2.dp))
+
+                    OutlinedTextField(
+                        modifier = Modifier
+                            .padding(
+                                top = 4.dp,
+                                start = 2.dp,
+                                end = 2.dp
+                            )
+                            .fillMaxWidth(),
+                        singleLine = true,
+                        value = cdnUrl,
+                        onValueChange = {
+                            if (it.length <= Constants.CDN_URL_MAX_LENGTH)
+                                model.customCdnUrl.value = it
+                        },
+                        isError = model.estimateUrlLength(cdnUrl) > Constants.CDN_URL_MAX_LENGTH,
+                        label = { Text(stringResource(R.string.activity_main_cdn_server)) }
+                    )
+                }
 
                 SpacedLine(4.dp)
 

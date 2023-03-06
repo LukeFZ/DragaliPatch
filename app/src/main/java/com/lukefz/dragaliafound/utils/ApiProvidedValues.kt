@@ -7,30 +7,15 @@ import okhttp3.Request
 
 object ApiProvidedValues {
     var apiUrl: String = ""
-        set(value) { field = parseApiUrl(value) }
+        set(value) { field = Utils.fixUrl(value, Constants.URL_MAX_LENGTH) }
+
+    var cdnUrl: String = Constants.DEFAULT_CDN_URL
+        set(value) { field = Utils.fixUrl(value, Constants.CDN_URL_MAX_LENGTH) }
 
     val isHttp: Boolean
         get() = apiUrl.startsWith("http://")
 
     var config: DragalipatchConfig = DragalipatchConfig()
-
-    private fun parseApiUrl(url: String): String {
-        var addr = url
-
-        if (!addr.matches(Regex("^(http|https)://.*$"))) {
-            addr = "https://$addr"
-        }
-
-        if (!addr.endsWith("/")) {
-            addr = addr.plus("/")
-        }
-
-        if (addr.length > Constants.URL_MAX_LENGTH) {
-            throw IndexOutOfBoundsException("Server address too long: (${addr.length} > ${Constants.URL_MAX_LENGTH})")
-        }
-
-        return addr
-    }
 
     fun getConfig(): Boolean {
         val client = OkHttpClient()
@@ -51,8 +36,11 @@ object ApiProvidedValues {
         if (config.mode == ApiMode.CONESHELL && config.coneshellKey == null)
             throw IllegalAccessException("Could not get server public key for Coneshell-enabled API.")
 
-        if (config.cdnUrl.length > 0x24)
+        if (config.cdnUrl.length > Constants.CDN_URL_MAX_LENGTH)
             throw IllegalAccessException("Server provided CDN url that was too long.")
+
+        if (config.cdnUrl == Constants.DEFAULT_CDN_URL && cdnUrl != Constants.DEFAULT_CDN_URL)
+            config = config.copy(cdnUrl = cdnUrl)
 
         return true
     }

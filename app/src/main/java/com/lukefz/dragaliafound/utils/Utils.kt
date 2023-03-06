@@ -118,4 +118,22 @@ object Utils {
         file.delete()
         temp.renameTo(file)
     }
+
+    fun fixUrl(url: String, maxLength: Int): String {
+        var addr = url
+
+        if (!addr.matches(Regex("^(http|https)://.*$"))) {
+            addr = "https://$addr"
+        }
+
+        if (!addr.endsWith("/")) {
+            addr = addr.plus("/")
+        }
+
+        if (addr.length > maxLength) {
+            throw IndexOutOfBoundsException("Server address too long: (${addr.length} > ${maxLength})")
+        }
+
+        return addr
+    }
 }

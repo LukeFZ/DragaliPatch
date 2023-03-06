@@ -8,10 +8,16 @@ import android.widget.Toast
 import androidx.compose.runtime.mutableStateOf
 import androidx.documentfile.provider.DocumentFile
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
 import com.lukefz.dragaliafound.R
 import com.lukefz.dragaliafound.utils.Constants
 import com.lukefz.dragaliafound.utils.StorageUtil
 import com.lukefz.dragaliafound.utils.Utils
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import java.io.FileOutputStream
 
 @Suppress("DEPRECATION")
@@ -23,6 +29,9 @@ class MainScreenViewModel(private val app: Application) : AndroidViewModel(app) 
     var patchedAppIcon: Drawable? = null
     var isPatchable = false
     var customServerUrl = mutableStateOf("")
+
+    var showCdnUrlBox = false
+    var customCdnUrl = mutableStateOf("")
 
     init {
         val packageManager = app.packageManager
@@ -61,16 +70,33 @@ class MainScreenViewModel(private val app: Application) : AndroidViewModel(app) 
         } catch (_: Exception) {
             patchedAppInfo = "\nPatched app not installed!\n"
         }
+
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                val client = OkHttpClient()
+                try {
+                    val request = Request.Builder()
+                        .url(Constants.DEFAULT_CDN_URL)
+                        .build()
+
+                    client.newCall(request).execute().use {
+                        showCdnUrlBox = it.code != 403
+                    }
+                } catch (_: Exception) {
+                    showCdnUrlBox = true
+                }
+            }
+        }
     }
 
-    fun estimateApiUrlLength() : Int {
-        var length = customServerUrl.value.length
+    fun estimateUrlLength(url: String) : Int {
+        var length = url.length
 
-        if (!customServerUrl.value.matches(Regex("^(http|https)://.*$"))) {
+        if (!url.matches(Regex("^(http|https)://.*$"))) {
             length += 8
         }
 
-        if (!customServerUrl.value.endsWith("/")) {
+        if (!url.endsWith("/")) {
             length += 1
         }
 

@@ -7,6 +7,8 @@ object Constants {
     const val SUPPORTED_PACKAGE_VERSION = 173
 
     const val URL_MAX_LENGTH = 40
+
+    const val CDN_URL_MAX_LENGTH = 36
     const val DEFAULT_CDN_URL = "https://dragalialost.akamaized.net"
 
     object Arm64Constants {

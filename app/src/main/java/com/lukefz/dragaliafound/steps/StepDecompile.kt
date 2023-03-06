@@ -9,6 +9,7 @@ import com.lukefz.dragaliafound.logging.StepManager
 import com.lukefz.dragaliafound.utils.Constants
 import com.lukefz.dragaliafound.utils.StorageUtil
 import com.lukefz.dragaliafound.utils.Utils
+import kotlin.io.path.createDirectory
 import kotlin.io.path.deleteExisting
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
@@ -23,35 +24,38 @@ class StepDecompile(private val manager: StepManager, private val storage: Stora
         val androlibResLogger = PatchLogger(manager, AndrolibResources::class.java.name)
         Utils.setField(AndrolibResources::class.java.getDeclaredField("LOGGER"), androlibResLogger)
 
-        val decoder = ApkDecoder(storage.sourceApk)
+        storage.appPatchDir.toFile().deleteRecursively()
+        storage.appPatchDir.createDirectory()
 
-        decoder.setOutDir(storage.appPatchDir.toFile())
-        decoder.setForceDelete(true)
+        val apkFiles = if (storage.isSplitApk) listOf(storage.sourceApk!!) + storage.sourceApks!! else listOf(storage.sourceApk!!)
+        var manifest: String? = null
+        val decoder = ApkDecoder()
+        decoder.setForceDelete(false)
         decoder.setFrameworkDir(storage.frameworkDir)
-        decoder.decode()
 
-        if (storage.isSplitApk) {
-            manager.addProgress(0.1f / (storage.sourceApks!!.size + 1))
+        for (apk in apkFiles) {
+            val tempFolder = storage.appPatchDir.resolve(Constants.TEMP_PREFIX.plus(apk.nameWithoutExtension))
 
-            val manifest = storage.appPatchDir.resolve(Constants.MANIFEST)
-            val originalManifest = manifest.readText()
-            decoder.setForceDelete(false)
-            for (file in storage.sourceApks!!) {
-                val tempFolder = storage.appPatchDir.resolve(Constants.TEMP_PREFIX.plus(file.nameWithoutExtension))
+            decoder.setOutDir(tempFolder.toFile())
+            decoder.setApkFile(apk)
+            decoder.decode()
 
-                decoder.setOutDir(tempFolder.toFile())
-                decoder.setApkFile(file)
-                decoder.decode()
-
+            if (apk.nameWithoutExtension == "base") {
+                manifest = tempFolder.resolve(Constants.MANIFEST).readText()
+            } else {
                 tempFolder.resolve(Constants.APKTOOL).deleteExisting()
-                tempFolder.toFile().copyRecursively(storage.appPatchDir.toFile(), true)
-                tempFolder.toFile().deleteRecursively()
-
-                manager.addProgress(0.1f / (storage.sourceApks!!.size + 1))
             }
 
-            manifest.writeText(originalManifest)
+            tempFolder.toFile().copyRecursively(storage.appPatchDir.toFile(), true)
+            tempFolder.toFile().deleteRecursively()
+
+            manager.addProgress(0.1f / apkFiles.size)
         }
+
+        if (manifest == null)
+            throw UnsupportedOperationException("Did not read valid app manifest during decompilation.")
+
+        storage.appPatchDir.resolve(Constants.MANIFEST).writeText(manifest)
 
         decoder.close()
 

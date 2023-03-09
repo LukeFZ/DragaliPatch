@@ -39,8 +39,8 @@ object ApiProvidedValues {
         if (config.cdnUrl.length > Constants.CDN_URL_MAX_LENGTH)
             throw IllegalAccessException("Server provided CDN url that was too long.")
 
-        if (config.cdnUrl == Constants.DEFAULT_CDN_URL && cdnUrl != Constants.DEFAULT_CDN_URL)
-            config = config.copy(cdnUrl = cdnUrl)
+        if (config.cdnUrl != Constants.DEFAULT_CDN_URL && cdnUrl == Constants.DEFAULT_CDN_URL)
+            cdnUrl = config.cdnUrl
 
         return true
     }

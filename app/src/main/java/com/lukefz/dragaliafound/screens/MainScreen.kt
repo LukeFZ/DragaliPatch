@@ -34,6 +34,7 @@ import com.lukefz.dragaliafound.utils.Constants
 fun MainScreen(navController: NavController, model: MainScreenViewModel = viewModel()) {
     val serverUrl by remember { model.customServerUrl }
     val cdnUrl by remember { model.customCdnUrl }
+    val showCdnInput by remember { model.showCdnUrlBox }
 
     val context = LocalContext.current
 
@@ -61,13 +62,13 @@ fun MainScreen(navController: NavController, model: MainScreenViewModel = viewMo
             if (model.isPatchable &&
                 model.estimateUrlLength(serverUrl) <= Constants.URL_MAX_LENGTH &&
                 serverUrl.isNotEmpty() &&
-                (!model.showCdnUrlBox || (
+                (!showCdnInput || (
                         model.estimateUrlLength(cdnUrl) <= Constants.CDN_URL_MAX_LENGTH &&
                         cdnUrl.isNotEmpty()))) {
                 ExtendedFloatingActionButton(
                     onClick = {
                         ApiProvidedValues.apiUrl = model.customServerUrl.value
-                        if (model.showCdnUrlBox) ApiProvidedValues.cdnUrl = model.customCdnUrl.value
+                        if (showCdnInput) ApiProvidedValues.cdnUrl = model.customCdnUrl.value
                         navController.navigate(NavScreens.Patcher.route)
                     },
                     icon = { Icon(Icons.Filled.PlayArrow, "Start button") },
@@ -112,7 +113,7 @@ fun MainScreen(navController: NavController, model: MainScreenViewModel = viewMo
                     label = { Text(stringResource(R.string.activity_main_custom_server)) }
                 )
 
-                if (model.showCdnUrlBox) {
+                if (showCdnInput) {
                     Spacer(Modifier.size(2.dp))
 
                     OutlinedTextField(

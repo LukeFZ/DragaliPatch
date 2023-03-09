@@ -30,7 +30,7 @@ class MainScreenViewModel(private val app: Application) : AndroidViewModel(app) 
     var isPatchable = false
     var customServerUrl = mutableStateOf("")
 
-    var showCdnUrlBox = false
+    var showCdnUrlBox = mutableStateOf(false)
     var customCdnUrl = mutableStateOf("")
 
     init {
@@ -80,10 +80,10 @@ class MainScreenViewModel(private val app: Application) : AndroidViewModel(app) 
                         .build()
 
                     client.newCall(request).execute().use {
-                        showCdnUrlBox = it.code != 403
+                        showCdnUrlBox.value = it.code != 403
                     }
                 } catch (_: Exception) {
-                    showCdnUrlBox = true
+                    showCdnUrlBox.value = true
                 }
             }
         }
@@ -135,18 +135,4 @@ class MainScreenViewModel(private val app: Application) : AndroidViewModel(app) 
         Toast.makeText(app.applicationContext, app.getString(R.string.app_backup_succeeded), Toast.LENGTH_LONG).show()
         return true
     }
-
-    /*@SuppressLint("SdCardPath")
-    fun clearDeviceAccount() {
-        try {
-            val cmd = "run-as ${Constants.PATCHED_PACKAGE_NAME} rm /data/data/${Constants.PATCHED_PACKAGE_NAME}/shared_prefs/deviceAccount:.xml"
-            val builder = ProcessBuilder(listOf(
-                "sh", "-c", cmd
-            ))
-            builder.start().waitFor()
-            Toast.makeText(app.applicationContext, app.getString(R.string.utility_clear_device_account_success), Toast.LENGTH_LONG).show()
-        } catch (_: Exception) {
-            Toast.makeText(app.applicationContext, app.getString(R.string.utility_clear_device_account_failed), Toast.LENGTH_LONG).show()
-        }
-    }*/
 }

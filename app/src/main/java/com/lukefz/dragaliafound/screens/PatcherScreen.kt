@@ -113,7 +113,6 @@ fun PatcherScreen(controller: NavController, model: PatcherScreenViewModel = vie
             }
 
             Spacer(Modifier.requiredHeight(16.dp))
-            //SpacedLine(width = 4.dp)
 
             if (!state.hasFailed) {
                 Column(

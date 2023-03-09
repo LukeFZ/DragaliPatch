@@ -20,9 +20,9 @@ import java.lang.reflect.Modifier
 import kotlin.experimental.inv
 
 object Utils {
-    fun obfuscateUrl(url: String): ByteArray {
-        val array = ByteArray(Constants.URL_MAX_LENGTH)
-        for (i in 0 until Constants.URL_MAX_LENGTH) {
+    fun obfuscateUrl(url: String, length: Int): ByteArray {
+        val array = ByteArray(length)
+        for (i in 0 until length) {
             if (i < url.length)
                 array[i] = url[i].code.toByte().inv()
             else

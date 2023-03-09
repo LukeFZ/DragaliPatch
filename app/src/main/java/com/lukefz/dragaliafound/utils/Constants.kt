@@ -8,7 +8,8 @@ object Constants {
 
     const val URL_MAX_LENGTH = 40
 
-    const val CDN_URL_MAX_LENGTH = 36
+    const val CDN_URL_MAX_LENGTH = 35
+    const val CDN_URL_1_MAX_LENGTH = CDN_URL_MAX_LENGTH + 25 // + dl/assetbundles/Android//, 2 removes the second slash
     const val DEFAULT_CDN_URL = "https://dragalialost.akamaized.net"
 
     object Arm64Constants {

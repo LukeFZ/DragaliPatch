@@ -105,7 +105,7 @@ class StepPatch(private val manager: StepManager, private val storage: StorageUt
     }
 
     private fun applyNativePatches(mode: ApiMode) {
-        val obfuscatedUrl = Utils.obfuscateUrl(apiValues.apiUrl)
+        val obfuscatedUrl = Utils.obfuscateUrl(apiValues.apiUrl, Constants.URL_MAX_LENGTH)
 
         val isArm64 = storage.appPatchDir.resolve("lib/arm64-v8a").exists()
         val libName = if (isArm64) "arm64-v8a" else "armeabi-v7a"
@@ -114,7 +114,7 @@ class StepPatch(private val manager: StepManager, private val storage: StorageUt
         val urlOffset = if (isArm64) Constants.Arm64Constants.URL_OFFSET else Constants.Arm32Constants.URL_OFFSET
         val urlLengthOffset = if (isArm64) Constants.Arm64Constants.URL_LENGTH_OFFSET else Constants.Arm32Constants.URL_LENGTH_OFFSET
 
-        val cdnUrl = apiValues.config.cdnUrl
+        val cdnUrl = apiValues.cdnUrl
 
         RandomAccessFile(
             storage.appPatchDir.resolve("lib/$libName/libil2cpp.so").toString(),
@@ -127,25 +127,29 @@ class StepPatch(private val manager: StepManager, private val storage: StorageUt
             it.write(obfuscatedUrl)
 
             if (cdnUrl != Constants.DEFAULT_CDN_URL) {
-                val cdnUrl1 = Utils.obfuscateUrl(cdnUrl.plus("/dl/assetbundles/Android//")) // yes it actually has two backslashes at the end
+                val cdnUrl1 = cdnUrl.plus("dl/assetbundles/Android//")
+                val obfCdnUrl1 = Utils.obfuscateUrl(cdnUrl1, Constants.CDN_URL_1_MAX_LENGTH) // yes it actually has two backslashes at the end
                 val cdnUrlOffset = if (isArm64) Constants.Arm64Constants.CDN_URL_OFFSET_1 else Constants.Arm32Constants.CDN_URL_OFFSET_1
                 val cdnUrlLengthOffset = if (isArm64) Constants.Arm64Constants.CDN_URL_LENGTH_OFFSET_1 else Constants.Arm32Constants.CDN_URL_LENGTH_OFFSET_1
 
+                // Write the version with two backslashes
+
                 it.seek(cdnUrlLengthOffset)
-                it.writeByte(cdnUrl1.count().toByte().inv().toInt())
+                it.writeByte(cdnUrl1.length.toByte().inv().toInt())
 
                 it.seek(cdnUrlOffset)
-                it.write(cdnUrl1)
+                it.write(obfCdnUrl1)
 
-                val cdnUrl2 = Utils.obfuscateUrl(cdnUrl.plus("dl/assetbundles/Android/"))
+                // Now write the version without the second backslash
+
                 val cdnUrl2Offset = if (isArm64) Constants.Arm64Constants.CDN_URL_OFFSET_2 else Constants.Arm32Constants.CDN_URL_OFFSET_2
                 val cdnUrl2LengthOffset = if (isArm64) Constants.Arm64Constants.CDN_URL_LENGTH_OFFSET_2 else Constants.Arm32Constants.CDN_URL_LENGTH_OFFSET_2
 
                 it.seek(cdnUrl2LengthOffset)
-                it.writeByte(cdnUrl2.count().toByte().inv().toInt())
+                it.writeByte((cdnUrl1.length - 1).toByte().inv().toInt())
 
                 it.seek(cdnUrl2Offset)
-                it.write(cdnUrl2)
+                it.write(obfCdnUrl1.sliceArray(0 until obfCdnUrl1.size-1))
             }
 
             when (mode) {

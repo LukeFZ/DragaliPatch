@@ -8,10 +8,10 @@ import java.io.BufferedWriter
 import java.io.DataInputStream
 import java.io.DataOutputStream
 import java.io.File
-import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
+import java.io.OutputStream
 import java.io.OutputStreamWriter
 import java.io.PrintWriter
 import java.io.StringWriter
@@ -47,6 +47,7 @@ object Utils {
         return sw.toString()
     }
 
+    // Used for setting apktool logger
     @SuppressLint("DiscouragedPrivateApi")
     @SuppressWarnings("JavaReflectionMemberAccess")
     fun setField(field: Field, value: Any) {
@@ -71,7 +72,7 @@ object Utils {
         }
     }
 
-    fun copyFile(input: InputStream, out: FileOutputStream) {
+    fun copyFile(input: InputStream, out: OutputStream) {
         val buffer = ByteArray(1024)
         var len: Int
         while (true) {
@@ -117,23 +118,5 @@ object Utils {
 
         file.delete()
         temp.renameTo(file)
-    }
-
-    fun fixUrl(url: String, maxLength: Int): String {
-        var addr = url
-
-        if (!addr.matches(Regex("^(http|https)://.*$"))) {
-            addr = "https://$addr"
-        }
-
-        if (!addr.endsWith("/")) {
-            addr = addr.plus("/")
-        }
-
-        if (addr.length > maxLength) {
-            throw IndexOutOfBoundsException("Server address too long: (${addr.length} > ${maxLength})")
-        }
-
-        return addr
     }
 }

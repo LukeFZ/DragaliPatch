@@ -33,6 +33,9 @@ class MainScreenViewModel(private val app: Application) : AndroidViewModel(app) 
     var showCdnUrlBox = mutableStateOf(false)
     var customCdnUrl = mutableStateOf("")
 
+    var backingUpOriginalGame = false
+    var backingUpModifiedGame = false
+
     init {
         val packageManager = app.packageManager
         try {
@@ -89,11 +92,11 @@ class MainScreenViewModel(private val app: Application) : AndroidViewModel(app) 
         }
     }
 
-    fun estimateUrlLength(url: String) : Int {
+    fun estimateUrlLength(url: String, preferHttps: Boolean = true) : Int {
         var length = url.length
 
         if (!url.matches(Regex("^(http|https)://.*$"))) {
-            length += 8
+            length += if (preferHttps) 8 else 7
         }
 
         if (!url.endsWith("/")) {
@@ -110,7 +113,55 @@ class MainScreenViewModel(private val app: Application) : AndroidViewModel(app) 
         app.startActivity(intent)
     }
 
-    fun backupOriginalGame(output: DocumentFile): Boolean {
+    fun startOriginalGameBackup() {
+        backingUpOriginalGame = true
+    }
+
+    fun startModifiedGameBackup() {
+        backingUpModifiedGame = true
+    }
+
+    fun handleOpenDocumentTree(output: DocumentFile) {
+        if (backingUpOriginalGame) {
+            backupOriginalGame(output)
+            backingUpOriginalGame = false
+        }
+
+        if (backingUpModifiedGame) {
+            backupModifiedGame(output)
+            backingUpModifiedGame = false
+        }
+    }
+
+    private fun backupModifiedGame(output: DocumentFile): Boolean {
+        val storage = StorageUtil(app.applicationContext)
+        val resolver = app.contentResolver
+
+        if (!storage.signedApk.exists()) {
+            Toast.makeText(app.applicationContext, app.getString(R.string.app_backup_failed), Toast.LENGTH_LONG).show()
+            return false
+        }
+
+        val outputFile = output.createFile("application/octet-stream", storage.signedApk.name)
+
+        if (outputFile == null) {
+            Toast.makeText(app.applicationContext, app.getString(R.string.app_backup_failed), Toast.LENGTH_LONG).show()
+            return false
+        }
+
+        storage.signedApk.inputStream().use { inp ->
+            resolver.openFileDescriptor(outputFile.uri, "w")?.use {
+                FileOutputStream(it.fileDescriptor).use { out ->
+                    Utils.copyFile(inp, out)
+                }
+            }
+        }
+
+        Toast.makeText(app.applicationContext, app.getString(R.string.app_backup_succeeded), Toast.LENGTH_LONG).show()
+        return true
+    }
+
+    private fun backupOriginalGame(output: DocumentFile): Boolean {
         val storage = StorageUtil(app.applicationContext)
         val apks = if (storage.isSplitApk) listOf(storage.sourceApk!!) + storage.sourceApks!! else listOf(storage.sourceApk!!)
         val resolver = app.contentResolver

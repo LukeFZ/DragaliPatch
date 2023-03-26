@@ -18,14 +18,10 @@ object Constants {
         const val NETWORK_UNPACK = 0x2e573ccL
         const val CONESHELL_OFFSET = 0x203d6a4L
         const val CONESHELL_PUBKEY = 0x47d5d54L
-        const val URL_OFFSET = 0x5cbb255L
-        const val URL_LENGTH_OFFSET = 0x5c7c6c8L
         const val SUNSET_OFFSET = 0x2453A60L
         const val SUNSET_PATCH = 0x1008252L
-        const val CDN_URL_OFFSET_1 = 0x5cf33faL
-        const val CDN_URL_LENGTH_OFFSET_1 = 0x5c8da80L
-        const val CDN_URL_OFFSET_2 = CDN_URL_OFFSET_1 + 0x3c
-        const val CDN_URL_LENGTH_OFFSET_2 = CDN_URL_LENGTH_OFFSET_1 + 0x8
+
+        const val METADATA_OFFSET = 0x5c6de90L
     }
 
     object Arm32Constants {
@@ -34,14 +30,21 @@ object Constants {
         const val NETWORK_UNPACK = 0x24532acL
         const val CONESHELL_OFFSET = 0x12b7b8cL
         const val CONESHELL_PUBKEY = 0x429f560L
-        const val URL_OFFSET = 0x497b8d9L
-        const val URL_LENGTH_OFFSET = 0x493cd4cL
         const val SUNSET_OFFSET = 0x17EF698L
         const val SUNSET_PATCH = 0x1001E3L
-        const val CDN_URL_OFFSET_1 = 0x49b3a7eL
-        const val CDN_URL_LENGTH_OFFSET_1 = 0x494e104L
+
+        const val METADATA_OFFSET = 0x492e514L
+    }
+
+    object MetadataConstants {
+        const val URL_OFFSET = 0x4d3c5
+        const val URL_LENGTH_OFFSET = 0xe838
+        const val CDN_URL_OFFSET_1 = 0x8556a
+        const val CDN_URL_LENGTH_OFFSET_1 = 0x1fbf0
         const val CDN_URL_OFFSET_2 = CDN_URL_OFFSET_1 + 0x3c
         const val CDN_URL_LENGTH_OFFSET_2 = CDN_URL_LENGTH_OFFSET_1 + 0x8
+        const val RELIABLE_TOKEN_OFFSET = 0x8552a
+        const val RELIABLE_TOKEN_LENGTH_OFFSET = 0x1fbe8
     }
 
     const val BAAS_URL_LOCATION = "assets/npf.json"

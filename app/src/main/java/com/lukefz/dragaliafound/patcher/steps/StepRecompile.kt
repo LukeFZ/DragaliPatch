@@ -8,8 +8,8 @@ import com.lukefz.dragaliafound.logging.StepManager
 import com.lukefz.dragaliafound.utils.StorageUtil
 import com.lukefz.dragaliafound.utils.Utils
 
-class StepRecompile(private val manager: StepManager, private val storage: StorageUtil) {
-    fun run() {
+class StepRecompile(private val manager: StepManager, private val storage: StorageUtil) : Step {
+    override suspend fun run() {
         manager.updateStep(R.string.activity_patcher_step_recompile)
 
         Utils.setField(Androlib::class.java.getDeclaredField("LOGGER"), PatchLogger(manager, Androlib::class.java.name))

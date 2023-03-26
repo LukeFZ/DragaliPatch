@@ -2,13 +2,15 @@ package com.lukefz.dragaliafound.patcher.steps
 
 import com.lukefz.dragaliafound.logging.StepManager
 import com.lukefz.dragaliafound.utils.StorageUtil
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.FileNotFoundException
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
 
-class StepAlign(private val manager: StepManager, private val storage: StorageUtil) {
-    fun run() {
+class StepAlign(private val manager: StepManager, private val storage: StorageUtil) : Step {
+    override suspend fun run() {
         val inputPath = storage.unsignedApk
         val outputPath = storage.alignedApk
 
@@ -18,7 +20,9 @@ class StepAlign(private val manager: StepManager, private val storage: StorageUt
         manager.onMessage("Aligning apk...")
 
         // Doing our own zipalign here, so we do not need the native version
-        val zin = ZipFile(inputPath)
+        val zin = withContext(Dispatchers.IO) {
+            ZipFile(inputPath)
+        }
         val progressPerEntry = 0.15f / zin.size()
         var offset = 0
 

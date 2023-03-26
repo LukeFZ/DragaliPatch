@@ -42,7 +42,7 @@ fun MainScreen(navController: NavController, model: MainScreenViewModel = viewMo
         contract = ActivityResultContracts.OpenDocumentTree()
     ) { selectedUri ->
         if (selectedUri != null)
-            model.backupOriginalGame(DocumentFile.fromTreeUri(context, selectedUri)!!)
+            model.handleOpenDocumentTree(DocumentFile.fromTreeUri(context, selectedUri)!!)
     }
 
     Scaffold(
@@ -63,7 +63,7 @@ fun MainScreen(navController: NavController, model: MainScreenViewModel = viewMo
                 model.estimateUrlLength(serverUrl) <= Constants.URL_MAX_LENGTH &&
                 serverUrl.isNotEmpty() &&
                 (!showCdnInput || (
-                        model.estimateUrlLength(cdnUrl) <= Constants.CDN_URL_MAX_LENGTH &&
+                        model.estimateUrlLength(cdnUrl, false) <= Constants.CDN_URL_MAX_LENGTH &&
                         cdnUrl.isNotEmpty()))) {
                 ExtendedFloatingActionButton(
                     onClick = {
@@ -72,7 +72,7 @@ fun MainScreen(navController: NavController, model: MainScreenViewModel = viewMo
                         navController.navigate(NavScreens.Patcher.route)
                     },
                     icon = { Icon(Icons.Filled.PlayArrow, "Start button") },
-                    text = { Text(stringResource(R.string.activity_patcher_step_patch)) },
+                    text = { Text(stringResource(R.string.activity_patcher_start_patching)) },
                 )
             }
         },
@@ -130,7 +130,7 @@ fun MainScreen(navController: NavController, model: MainScreenViewModel = viewMo
                             if (it.length <= Constants.CDN_URL_MAX_LENGTH)
                                 model.customCdnUrl.value = it
                         },
-                        isError = model.estimateUrlLength(cdnUrl) > Constants.CDN_URL_MAX_LENGTH,
+                        isError = model.estimateUrlLength(cdnUrl, false) > Constants.CDN_URL_MAX_LENGTH,
                         label = { Text(stringResource(R.string.activity_main_cdn_server)) }
                     )
                 }
@@ -146,12 +146,31 @@ fun MainScreen(navController: NavController, model: MainScreenViewModel = viewMo
                         )
                         .fillMaxWidth(),
                     onClick = {
-                              intentLauncher.launch(null)
+                        model.startOriginalGameBackup()
+                        intentLauncher.launch(null)
                     },
                     enabled = model.isPatchable,
 
                 ) {
                     Text(stringResource(R.string.app_backup_button))
+                }
+
+                Button(
+                    modifier = Modifier
+                        .padding(
+                            top = 4.dp,
+                            start = 2.dp,
+                            end = 2.dp
+                        )
+                        .fillMaxWidth(),
+                    onClick = {
+                        model.startModifiedGameBackup()
+                        intentLauncher.launch(null)
+                    },
+                    enabled = model.isPatchable,
+
+                    ) {
+                    Text(stringResource(R.string.modified_app_backup_button))
                 }
 
                 SpacedLine(4.dp)

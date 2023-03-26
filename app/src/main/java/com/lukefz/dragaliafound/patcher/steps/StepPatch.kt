@@ -13,10 +13,10 @@ import kotlin.io.path.exists
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
-class StepPatch(private val manager: StepManager, private val storage: StorageUtil) {
+class StepPatch(private val manager: StepManager, private val storage: StorageUtil) : Step {
     private val apiValues = PatcherConfig
 
-    fun run() {
+    override suspend fun run() {
         manager.updateStep(R.string.activity_patcher_step_native_patch)
 
         applyNativePatches(apiValues.apiOptions.mode)
@@ -112,9 +112,14 @@ class StepPatch(private val manager: StepManager, private val storage: StorageUt
         val isArm64 = storage.appPatchDir.resolve("lib/arm64-v8a").exists()
         val libName = if (isArm64) "arm64-v8a" else "armeabi-v7a"
 
+        val metadataOffset = if (isArm64) Constants.Arm64Constants.METADATA_OFFSET else Constants.Arm32Constants.METADATA_OFFSET
+
         val ret = if (isArm64) Constants.Arm64Constants.RET else Constants.Arm32Constants.RET
-        val urlOffset = if (isArm64) Constants.Arm64Constants.URL_OFFSET else Constants.Arm32Constants.URL_OFFSET
-        val urlLengthOffset = if (isArm64) Constants.Arm64Constants.URL_LENGTH_OFFSET else Constants.Arm32Constants.URL_LENGTH_OFFSET
+        val urlOffset = metadataOffset + Constants.MetadataConstants.URL_OFFSET
+        val urlLengthOffset = metadataOffset + Constants.MetadataConstants.URL_LENGTH_OFFSET
+
+        val tokenOffset = metadataOffset + Constants.MetadataConstants.RELIABLE_TOKEN_OFFSET
+        val tokenLengthOffset = metadataOffset + Constants.MetadataConstants.RELIABLE_TOKEN_LENGTH_OFFSET
 
         val cdnUrl = apiValues.cdnUrl
 
@@ -128,11 +133,17 @@ class StepPatch(private val manager: StepManager, private val storage: StorageUt
             it.seek(urlOffset)
             it.write(obfuscatedUrl)
 
+            it.seek(tokenLengthOffset)
+            it.writeByte(apiValues.apiUrl.length.toByte().inv().toInt())
+
+            it.seek(tokenOffset)
+            it.write(Utils.obfuscateUrl(apiValues.apiUrl, 40))
+
             if (cdnUrl != Constants.DEFAULT_CDN_URL) {
                 val cdnUrl1 = cdnUrl.plus("dl/assetbundles/Android//")
                 val obfCdnUrl1 = Utils.obfuscateUrl(cdnUrl1, Constants.CDN_URL_1_MAX_LENGTH) // yes it actually has two backslashes at the end
-                val cdnUrlOffset = if (isArm64) Constants.Arm64Constants.CDN_URL_OFFSET_1 else Constants.Arm32Constants.CDN_URL_OFFSET_1
-                val cdnUrlLengthOffset = if (isArm64) Constants.Arm64Constants.CDN_URL_LENGTH_OFFSET_1 else Constants.Arm32Constants.CDN_URL_LENGTH_OFFSET_1
+                val cdnUrlOffset = metadataOffset + Constants.MetadataConstants.CDN_URL_OFFSET_1
+                val cdnUrlLengthOffset = metadataOffset + Constants.MetadataConstants.CDN_URL_LENGTH_OFFSET_1
 
                 // Write the version with two backslashes
 
@@ -144,8 +155,8 @@ class StepPatch(private val manager: StepManager, private val storage: StorageUt
 
                 // Now write the version without the second backslash
 
-                val cdnUrl2Offset = if (isArm64) Constants.Arm64Constants.CDN_URL_OFFSET_2 else Constants.Arm32Constants.CDN_URL_OFFSET_2
-                val cdnUrl2LengthOffset = if (isArm64) Constants.Arm64Constants.CDN_URL_LENGTH_OFFSET_2 else Constants.Arm32Constants.CDN_URL_LENGTH_OFFSET_2
+                val cdnUrl2Offset = metadataOffset + Constants.MetadataConstants.CDN_URL_OFFSET_2
+                val cdnUrl2LengthOffset = metadataOffset + Constants.MetadataConstants.CDN_URL_LENGTH_OFFSET_2
 
                 it.seek(cdnUrl2LengthOffset)
                 it.writeByte((cdnUrl1.length - 1).toByte().inv().toInt())

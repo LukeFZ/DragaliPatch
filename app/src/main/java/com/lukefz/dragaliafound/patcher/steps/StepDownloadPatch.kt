@@ -11,8 +11,8 @@ import java.nio.file.Paths
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
 
-class StepDownloadPatch(private val manager: StepManager, private val storage: StorageUtil) {
-    fun run() {
+class StepDownloadPatch(private val manager: StepManager, private val storage: StorageUtil) : Step {
+    override suspend fun run() {
         manager.updateStep(R.string.activity_patcher_step_download)
 
         val client = OkHttpClient()

@@ -16,13 +16,13 @@
     <string name="activity_about_custom_server_creators">dreadfullydistinct &amp; Ceris,</string>
     <string name="activity_patcher_done">Done!</string>
     <string name="activity_patcher_failed">Failed</string>
-    <string name="activity_patcher_step_decompile">Decompile</string>
-    <string name="activity_patcher_step_patch">Patch</string>
-    <string name="activity_patcher_step_recompile">Recompile</string>
-    <string name="activity_patcher_step_sign">Sign</string>
+    <string name="activity_patcher_step_decompile">Decompiling…</string>
+    <string name="activity_patcher_start_patching">Patch app</string>
+    <string name="activity_patcher_step_recompile">Recompiling…</string>
+    <string name="activity_patcher_step_sign">Signing app…</string>
     <string name="activity_patcher_step_sign_setup">Setting up…</string>
     <string name="activity_patcher_step_signing">Signing…</string>
-    <string name="activity_patcher_step_native_patch">Applying native patches..</string>
+    <string name="activity_patcher_step_native_patch">Applying native patches…</string>
     <string name="activity_main_custom_server">Server Address</string>
     <string name="activity_main_cdn_server">CDN Address</string>
     <string name="patcher_share_error">Share</string>
@@ -38,7 +38,8 @@
     <string name="activity_patcher_completed">Completed!</string>
     <string name="activity_patcher_title_completed">Patching completed!</string>
     <string name="app_backup_button">Backup original app</string>
-    <string name="app_backup_succeeded">Successfully backed up original app!</string>
-    <string name="app_backup_failed">Failed to backup original app.</string>
+    <string name="app_backup_succeeded">Successfully backed up app!</string>
+    <string name="app_backup_failed">Failed to backup app.</string>
     <string name="patched_app_name">Dragalia Found - %s</string>
+    <string name="modified_app_backup_button">Backup modified app</string>
 </resources>

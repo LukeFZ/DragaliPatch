@@ -10,32 +10,41 @@ import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import androidx.work.WorkManager
 import com.lukefz.dragaliafound.R
+import com.lukefz.dragaliafound.patcher.PatcherWorker
 
 @Suppress("UNUSED_PARAMETER")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PatcherScreen(controller: NavController, model: PatcherScreenViewModel = viewModel()) {
-    val state = model.state
+    val workerStates by WorkManager.getInstance(LocalContext.current).getWorkInfosForUniqueWorkLiveData(PatcherWorker.Tag).observeAsState(mutableListOf())
     val textScroll = rememberScrollState()
 
+    if (workerStates.size > 0) {
+        val workerState = workerStates[0]
+        model.updateFromWorker(workerState)
+    }
+
     val animatedProgress by animateFloatAsState(
-        targetValue = state.currentProgress,
+        targetValue = model.currentProgress,
         animationSpec = ProgressIndicatorDefaults.ProgressAnimationSpec,
         label = "Patch progress"
     )
 
-    LaunchedEffect(true) {
-        model.startPatch()
+    LaunchedEffect(Unit) {
+        model.startWorker()
     }
 
-    LaunchedEffect(state.logMessages) {
+    LaunchedEffect(workerStates) {
         textScroll.scrollTo(textScroll.maxValue)
     }
 
@@ -43,9 +52,9 @@ fun PatcherScreen(controller: NavController, model: PatcherScreenViewModel = vie
         topBar = {
             TopAppBar(
                 title = {
-                    if (state.hasFailed)
+                    if (model.hasFailed)
                         Text(stringResource(id = R.string.activity_patcher_title_failed))
-                    else if (state.hasFinished)
+                    else if (model.hasFinished)
                         Text(stringResource(id = R.string.activity_patcher_completed))
                     else
                         Text(stringResource(id = R.string.activity_patcher_title))
@@ -53,24 +62,24 @@ fun PatcherScreen(controller: NavController, model: PatcherScreenViewModel = vie
             )
         },
         floatingActionButton = {
-            if (state.hasFailed || state.hasFinished) {
+            if (model.hasFailed || model.hasFinished) {
                 ExtendedFloatingActionButton(
                     onClick = {
-                        if (state.hasFailed) {
-                            model.shareLog()
+                        if (model.hasFailed) {
+                            model.shareLog(model.logString)
                         } else {
                             model.installPatchedApp()
                         }
                     },
                     icon = {
-                        if (state.hasFailed)
+                        if (model.hasFailed)
                             Icon(Icons.Filled.Share, "Share the error")
                         else
                             Icon(Icons.Filled.Done, "Install the patched app")
 
                     },
                     text = {
-                        if (state.hasFailed)
+                        if (model.hasFailed)
                             Text(stringResource(R.string.patcher_share_error))
                         else
                             Text(stringResource(R.string.install))
@@ -104,7 +113,7 @@ fun PatcherScreen(controller: NavController, model: PatcherScreenViewModel = vie
                     shape = RoundedCornerShape(8.dp)
                 ) {
                     Text(
-                        state.logMessages,
+                        model.logString,
                         modifier = Modifier
                             .padding(horizontal = 4.dp, vertical = 4.dp)
                             .verticalScroll(textScroll)
@@ -114,7 +123,7 @@ fun PatcherScreen(controller: NavController, model: PatcherScreenViewModel = vie
 
             Spacer(Modifier.requiredHeight(16.dp))
 
-            if (!state.hasFailed) {
+            if (!model.hasFailed) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -124,7 +133,7 @@ fun PatcherScreen(controller: NavController, model: PatcherScreenViewModel = vie
                         ),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(state.currentStep)
+                    Text(model.currentStep)
                     Spacer(Modifier.size(4.dp))
                     LinearProgressIndicator(
                         progress = animatedProgress,

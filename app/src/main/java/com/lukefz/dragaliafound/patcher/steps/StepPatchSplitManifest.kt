@@ -3,8 +3,8 @@ package com.lukefz.dragaliafound.patcher.steps
 import com.lukefz.dragaliafound.logging.StepManager
 import com.lukefz.dragaliafound.utils.StorageUtil
 
-class StepPatchSplitManifest(private val manager: StepManager, private val storage: StorageUtil) {
-    fun run() {
+class StepPatchSplitManifest(private val manager: StepManager, private val storage: StorageUtil) : Step {
+    override suspend fun run() {
         manager.onMessage("Split APK detected - Patching manifest...")
 
         val manifest = storage.appPatchDir.resolve("AndroidManifest.xml").toFile()

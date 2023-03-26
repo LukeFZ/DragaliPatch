@@ -8,8 +8,8 @@ import java.security.KeyStore
 import java.security.PrivateKey
 import java.security.cert.X509Certificate
 
-class StepSign(private val manager: StepManager, private val storage: StorageUtil) {
-    fun run() {
+class StepSign(private val manager: StepManager, private val storage: StorageUtil) : Step {
+    override suspend fun run() {
         manager.updateStep(R.string.activity_patcher_step_signing)
 
         manager.onMessage("Loading keystore...")

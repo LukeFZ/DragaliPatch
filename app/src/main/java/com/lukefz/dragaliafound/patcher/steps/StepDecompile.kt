@@ -14,8 +14,8 @@ import kotlin.io.path.deleteExisting
 import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
-class StepDecompile(private val manager: StepManager, private val storage: StorageUtil) {
-    fun run() {
+class StepDecompile(private val manager: StepManager, private val storage: StorageUtil) : Step {
+    override suspend fun run() {
         manager.updateStep(R.string.activity_patcher_step_decompile)
 
         Utils.setField(Androlib::class.java.getDeclaredField("LOGGER"), PatchLogger(manager, Androlib::class.java.name))

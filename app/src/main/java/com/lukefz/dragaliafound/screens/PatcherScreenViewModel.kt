@@ -10,8 +10,8 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.lukefz.dragaliafound.R
 import com.lukefz.dragaliafound.logging.StepManager
-import com.lukefz.dragaliafound.steps.*
-import com.lukefz.dragaliafound.utils.ApiProvidedValues
+import com.lukefz.dragaliafound.patcher.steps.*
+import com.lukefz.dragaliafound.utils.PatcherConfig
 import com.lukefz.dragaliafound.utils.PatcherState
 import com.lukefz.dragaliafound.utils.StorageUtil
 import com.lukefz.dragaliafound.utils.Utils
@@ -88,7 +88,7 @@ class PatcherScreenViewModel(private val app: Application) : AndroidViewModel(ap
                 val sign = StepSign(ref, storage)
 
                 runBlocking {
-                    val retrieveConfigResult = ApiProvidedValues.getConfig()
+                    val retrieveConfigResult = PatcherConfig.retrieveApiOptions()
                     if (!retrieveConfigResult)
                         onMessage("WARNING: Failed to download config from API server! Using fallback values.")
 

@@ -1,4 +1,4 @@
-package com.lukefz.dragaliafound.steps
+package com.lukefz.dragaliafound.patcher.steps
 
 import brut.androlib.Androlib
 import brut.androlib.ApkDecoder
@@ -18,11 +18,8 @@ class StepDecompile(private val manager: StepManager, private val storage: Stora
     fun run() {
         manager.updateStep(R.string.activity_patcher_step_decompile)
 
-        val androlibLogger = PatchLogger(manager, Androlib::class.java.name)
-        Utils.setField(Androlib::class.java.getDeclaredField("LOGGER"), androlibLogger)
-
-        val androlibResLogger = PatchLogger(manager, AndrolibResources::class.java.name)
-        Utils.setField(AndrolibResources::class.java.getDeclaredField("LOGGER"), androlibResLogger)
+        Utils.setField(Androlib::class.java.getDeclaredField("LOGGER"), PatchLogger(manager, Androlib::class.java.name))
+        Utils.setField(AndrolibResources::class.java.getDeclaredField("LOGGER"), PatchLogger(manager, AndrolibResources::class.java.name))
 
         storage.appPatchDir.toFile().deleteRecursively()
         storage.appPatchDir.createDirectory()

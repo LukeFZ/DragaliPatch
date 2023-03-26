@@ -1,4 +1,4 @@
-package com.lukefz.dragaliafound.steps
+package com.lukefz.dragaliafound.patcher.steps
 
 import brut.androlib.Androlib
 import brut.androlib.options.BuildOptions
@@ -12,13 +12,13 @@ class StepRecompile(private val manager: StepManager, private val storage: Stora
     fun run() {
         manager.updateStep(R.string.activity_patcher_step_recompile)
 
-        val androlibLogger = PatchLogger(manager, Androlib::class.java.name)
-        Utils.setField(Androlib::class.java.getDeclaredField("LOGGER"), androlibLogger)
+        Utils.setField(Androlib::class.java.getDeclaredField("LOGGER"), PatchLogger(manager, Androlib::class.java.name))
 
         val options = BuildOptions()
         options.frameworkFolderLocation = storage.frameworkDir
         options.aaptPath = storage.aaptPath.absolutePath
 
+        manager.onMessage("Recompiling...")
         Androlib(options).build(storage.appPatchDir.toFile(), storage.unsignedApk)
         manager.onMessage("Finished recompiling!")
     }

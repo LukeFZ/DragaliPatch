@@ -1,4 +1,4 @@
-package com.lukefz.dragaliafound.steps
+package com.lukefz.dragaliafound.patcher.steps
 
 import android.util.Base64
 import com.lukefz.dragaliafound.R
@@ -14,17 +14,17 @@ import kotlin.io.path.readText
 import kotlin.io.path.writeText
 
 class StepPatch(private val manager: StepManager, private val storage: StorageUtil) {
-    private val apiValues = ApiProvidedValues
+    private val apiValues = PatcherConfig
 
     fun run() {
         manager.updateStep(R.string.activity_patcher_step_native_patch)
 
-        applyNativePatches(apiValues.config.mode)
+        applyNativePatches(apiValues.apiOptions.mode)
 
         manager.onMessage("Applied native patches!")
 
         val urlWithoutPrefixAndSuffix = apiValues.apiUrl.split("://")[1].dropLast(1)
-        patchBaasUrl(urlWithoutPrefixAndSuffix, apiValues.config.useUnifiedLogin, apiValues.isHttp)
+        patchBaasUrl(urlWithoutPrefixAndSuffix, apiValues.apiOptions.useUnifiedLogin, apiValues.isHttp)
         patchPackageName(urlWithoutPrefixAndSuffix)
 
         manager.updateStep(R.string.patcher_step_patch_other)
@@ -89,6 +89,8 @@ class StepPatch(private val manager: StepManager, private val storage: StorageUt
                         file.inputStream().use {
                             git.apply().setPatch(it).call()
                         }
+
+                        manager.onMessage("Finished installing patch.")
                     }
                 }
             }
@@ -171,7 +173,7 @@ class StepPatch(private val manager: StepManager, private val storage: StorageUt
                 }
                 ApiMode.CONESHELL -> {
                     val publicKeyOffset = if (isArm64) Constants.Arm64Constants.CONESHELL_PUBKEY else Constants.Arm32Constants.CONESHELL_PUBKEY
-                    val publicKey = Base64.decode(apiValues.config.coneshellKey, 0)
+                    val publicKey = Base64.decode(apiValues.apiOptions.coneshellKey, 0)
                     if (publicKey.size != 32)
                         throw IllegalArgumentException("Provided coneshell public key was not the required 32 bytes in size.")
 

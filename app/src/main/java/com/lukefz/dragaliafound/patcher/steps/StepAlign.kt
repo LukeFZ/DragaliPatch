@@ -1,4 +1,4 @@
-package com.lukefz.dragaliafound.steps
+package com.lukefz.dragaliafound.patcher.steps
 
 import com.lukefz.dragaliafound.logging.StepManager
 import com.lukefz.dragaliafound.utils.StorageUtil

@@ -1,4 +1,4 @@
-package com.lukefz.dragaliafound.steps
+package com.lukefz.dragaliafound.patcher.steps
 
 import com.lukefz.dragaliafound.R
 import com.lukefz.dragaliafound.logging.StepManager
@@ -25,7 +25,6 @@ class StepDownloadPatch(private val manager: StepManager, private val storage: S
                 var entry: ZipEntry?
                 while (true) {
                     entry = zip.nextEntry
-
                     if (entry == null)
                         break
 
@@ -33,7 +32,6 @@ class StepDownloadPatch(private val manager: StepManager, private val storage: S
                         val fileName = Paths.get(entry.name).fileName
 
                         manager.onMessage("Found patch: $fileName")
-
                         Utils.copyFile(zip, storage.downloadedPatchDir.resolve(fileName).toFile())
 
                         zip.closeEntry()

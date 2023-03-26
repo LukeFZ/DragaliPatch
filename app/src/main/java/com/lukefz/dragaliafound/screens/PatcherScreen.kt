@@ -66,7 +66,7 @@ fun PatcherScreen(controller: NavController, model: PatcherScreenViewModel = vie
                         if (state.hasFailed)
                             Icon(Icons.Filled.Share, "Share the error")
                         else
-                            Icon(Icons.Filled.Done, "Done symbol")
+                            Icon(Icons.Filled.Done, "Install the patched app")
 
                     },
                     text = {

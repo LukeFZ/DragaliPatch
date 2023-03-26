@@ -26,7 +26,7 @@ import com.lukefz.dragaliafound.R
 import com.lukefz.dragaliafound.composable.AppContainer
 import com.lukefz.dragaliafound.composable.SpacedLine
 import com.lukefz.dragaliafound.navigation.NavScreens
-import com.lukefz.dragaliafound.utils.ApiProvidedValues
+import com.lukefz.dragaliafound.utils.PatcherConfig
 import com.lukefz.dragaliafound.utils.Constants
 
 @Composable
@@ -40,7 +40,7 @@ fun MainScreen(navController: NavController, model: MainScreenViewModel = viewMo
 
     val intentLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocumentTree()
-    ) {selectedUri ->
+    ) { selectedUri ->
         if (selectedUri != null)
             model.backupOriginalGame(DocumentFile.fromTreeUri(context, selectedUri)!!)
     }
@@ -67,8 +67,8 @@ fun MainScreen(navController: NavController, model: MainScreenViewModel = viewMo
                         cdnUrl.isNotEmpty()))) {
                 ExtendedFloatingActionButton(
                     onClick = {
-                        ApiProvidedValues.apiUrl = model.customServerUrl.value
-                        if (showCdnInput) ApiProvidedValues.cdnUrl = model.customCdnUrl.value
+                        PatcherConfig.apiUrl = model.customServerUrl.value
+                        if (showCdnInput) PatcherConfig.cdnUrl = model.customCdnUrl.value
                         navController.navigate(NavScreens.Patcher.route)
                     },
                     icon = { Icon(Icons.Filled.PlayArrow, "Start button") },

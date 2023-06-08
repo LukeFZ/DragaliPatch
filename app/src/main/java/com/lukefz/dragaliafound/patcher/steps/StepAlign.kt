@@ -51,7 +51,7 @@ class StepAlign(private val manager: StepManager, private val storage: StorageUt
 
                 if (!newEntry.isDirectory) {
                     offset += newEntry.compressedSize.toInt()
-                    val buffer = ByteArray(1024)
+                    val buffer = ByteArray(32768)
                     var len: Int
                     zin.getInputStream(entry).use { zinStream ->
                         while (true) {

@@ -30,6 +30,7 @@ class PatcherWorker(context: Context, parameters: WorkerParameters)
         const val Step = "Step"
         const val Tag = "DragaliPatch-Patcher"
         const val Messages = "Messages"
+        const val ChannelId = "dragalipatch-work"
     }
 
     private var currentProgress = 0f
@@ -53,13 +54,13 @@ class PatcherWorker(context: Context, parameters: WorkerParameters)
             storage.colorDir.absolutePathString()
         )
 
-        val download = StepDownloadPatch(this@PatcherWorker, storage)
-        val decompile = StepDecompile(this@PatcherWorker, storage)
-        val patchManifest = StepPatchSplitManifest(this@PatcherWorker, storage)
-        val patch = StepPatch(this@PatcherWorker, storage)
-        val recompile = StepRecompile(this@PatcherWorker, storage)
-        val align = StepAlign(this@PatcherWorker, storage)
-        val sign = StepSign(this@PatcherWorker, storage)
+        val download = StepDownloadPatch(this, storage)
+        val decompile = StepDecompile(this, storage)
+        val patchManifest = StepPatchSplitManifest(this, storage)
+        val patch = StepPatch(this, storage)
+        val recompile = StepRecompile(this, storage)
+        val align = StepAlign(this, storage)
+        val sign = StepSign(this, storage)
 
         val retrieveConfigResult = PatcherConfig.retrieveApiOptions()
         if (!retrieveConfigResult)
@@ -85,8 +86,6 @@ class PatcherWorker(context: Context, parameters: WorkerParameters)
 
             onMessage("Ready to install.")
             updateStep(R.string.activity_patcher_completed)
-
-
         } catch (ex: Exception) {
             onMessage(Utils.getStackTrace(ex))
             showFailedNotification()
@@ -139,7 +138,7 @@ class PatcherWorker(context: Context, parameters: WorkerParameters)
         val intent = WorkManager.getInstance(applicationContext)
             .createCancelPendingIntent(id)
 
-        return NotificationCompat.Builder(applicationContext, "dragalipatch-work")
+        return NotificationCompat.Builder(applicationContext, ChannelId)
             .setContentTitle("Patching in progress")
             .setContentText(currentStep)
             .setTicker(title)
@@ -151,8 +150,8 @@ class PatcherWorker(context: Context, parameters: WorkerParameters)
     }
 
     private fun showFailedNotification() {
-        val notification = NotificationCompat.Builder(applicationContext, "dragalipatch-work")
-            .setContentTitle("Patching failed!")
+        val notification = NotificationCompat.Builder(applicationContext, ChannelId)
+            .setContentTitle(applicationContext.getString(R.string.activity_patcher_title_failed))
             .setOngoing(false)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .build()
@@ -161,11 +160,11 @@ class PatcherWorker(context: Context, parameters: WorkerParameters)
     }
 
     private fun showFinishedNotification(installIntent: Intent) {
-        val notification = NotificationCompat.Builder(applicationContext, "dragalipatch-work")
-            .setContentTitle("Patching finished!")
+        val notification = NotificationCompat.Builder(applicationContext, ChannelId)
+            .setContentTitle(applicationContext.getString(R.string.activity_patcher_title_completed))
             .setOngoing(false)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .addAction(android.R.drawable.ic_input_add, "Install", PendingIntent.getActivity(applicationContext, 0, installIntent, PendingIntent.FLAG_IMMUTABLE))
+            .addAction(android.R.drawable.ic_input_add, applicationContext.getString(R.string.install), PendingIntent.getActivity(applicationContext, 0, installIntent, PendingIntent.FLAG_IMMUTABLE))
             .build()
 
         notificationManager.notify(1338, notification)
@@ -175,7 +174,7 @@ class PatcherWorker(context: Context, parameters: WorkerParameters)
         val name = "Current patch status"
         val description = "dragalipatch notification channel"
         val importance = NotificationManager.IMPORTANCE_HIGH
-        val channel = NotificationChannel("dragalipatch-work", name, importance)
+        val channel = NotificationChannel(ChannelId, name, importance)
         channel.description = description
         notificationManager.createNotificationChannel(channel)
     }

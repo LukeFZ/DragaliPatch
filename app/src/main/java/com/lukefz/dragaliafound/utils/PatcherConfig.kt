@@ -9,7 +9,7 @@ object PatcherConfig {
     var apiUrl: String = ""
         set(value) { field = fixUrl(value, Constants.URL_MAX_LENGTH) }
 
-    var cdnUrl: String = Constants.DEFAULT_CDN_URL
+    var cdnUrl: String = ""
         set(value) { field = fixUrl(value, Constants.CDN_URL_MAX_LENGTH, false) }
 
     val isHttp: Boolean
@@ -39,13 +39,17 @@ object PatcherConfig {
         if (apiOptions.cdnUrl.length > Constants.CDN_URL_MAX_LENGTH)
             throw IllegalAccessException("Server provided CDN url that was too long.")
 
-        if (apiOptions.cdnUrl != Constants.DEFAULT_CDN_URL && cdnUrl == Constants.DEFAULT_CDN_URL)
+        if (cdnUrl.isEmpty()) {
             cdnUrl = apiOptions.cdnUrl
+        }
 
         return true
     }
 
     private fun fixUrl(url: String, maxLength: Int, preferHttps: Boolean = true): String {
+        if (url.isEmpty())
+            return url
+
         var addr = url
 
         if (!addr.matches(Regex("^(http|https)://.*$"))) {

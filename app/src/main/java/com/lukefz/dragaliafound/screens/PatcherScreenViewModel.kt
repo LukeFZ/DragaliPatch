@@ -25,11 +25,12 @@ class PatcherScreenViewModel(private val app: Application) : AndroidViewModel(ap
     fun updateFromWorker(info: WorkInfo) {
         hasFailed = info.state == WorkInfo.State.FAILED || info.state == WorkInfo.State.CANCELLED
         hasFinished = info.state == WorkInfo.State.SUCCEEDED
-        if (hasFailed || hasFinished) return
 
-        currentStep = info.progress.getString(PatcherWorker.Step) ?: ""
-        logString = (info.progress.getStringArray(PatcherWorker.Messages)?.toList() ?: listOf()).joinToString("\n")
-        currentProgress = info.progress.getFloat(PatcherWorker.Progress, 0f)
+        val data = if (hasFailed || hasFinished) info.outputData else info.progress
+
+        currentStep = data.getString(PatcherWorker.Step) ?: ""
+        logString = (data.getStringArray(PatcherWorker.Messages)?.toList() ?: listOf()).joinToString("\n")
+        currentProgress = data.getFloat(PatcherWorker.Progress, 0f)
     }
 
     fun installPatchedApp() {
@@ -51,6 +52,6 @@ class PatcherScreenViewModel(private val app: Application) : AndroidViewModel(ap
             .build()
 
         WorkManager.getInstance(app.applicationContext)
-            .enqueueUniqueWork(PatcherWorker.Tag, ExistingWorkPolicy.KEEP, request)
+            .enqueueUniqueWork(PatcherWorker.Tag, ExistingWorkPolicy.REPLACE, request)
     }
 }

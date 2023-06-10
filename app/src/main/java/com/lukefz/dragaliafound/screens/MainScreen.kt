@@ -34,7 +34,6 @@ import com.lukefz.dragaliafound.utils.Constants
 fun MainScreen(navController: NavController, model: MainScreenViewModel = viewModel()) {
     val serverUrl by remember { model.customServerUrl }
     val cdnUrl by remember { model.customCdnUrl }
-    val showCdnInput by remember { model.showCdnUrlBox }
 
     val context = LocalContext.current
 
@@ -61,14 +60,11 @@ fun MainScreen(navController: NavController, model: MainScreenViewModel = viewMo
         floatingActionButton = {
             if (model.isPatchable &&
                 model.estimateUrlLength(serverUrl) <= Constants.URL_MAX_LENGTH &&
-                serverUrl.isNotEmpty() &&
-                (!showCdnInput || (
-                        model.estimateUrlLength(cdnUrl, false) <= Constants.CDN_URL_MAX_LENGTH &&
-                        cdnUrl.isNotEmpty()))) {
+                serverUrl.isNotEmpty()) {
                 ExtendedFloatingActionButton(
                     onClick = {
                         PatcherConfig.apiUrl = model.customServerUrl.value
-                        if (showCdnInput) PatcherConfig.cdnUrl = model.customCdnUrl.value
+                        PatcherConfig.cdnUrl = model.customCdnUrl.value
                         navController.navigate(NavScreens.Patcher.route)
                     },
                     icon = { Icon(Icons.Filled.PlayArrow, "Start button") },
@@ -113,27 +109,25 @@ fun MainScreen(navController: NavController, model: MainScreenViewModel = viewMo
                     label = { Text(stringResource(R.string.activity_main_custom_server)) }
                 )
 
-                if (showCdnInput) {
-                    Spacer(Modifier.size(2.dp))
+                Spacer(Modifier.size(2.dp))
 
-                    OutlinedTextField(
-                        modifier = Modifier
-                            .padding(
-                                top = 4.dp,
-                                start = 2.dp,
-                                end = 2.dp
-                            )
-                            .fillMaxWidth(),
-                        singleLine = true,
-                        value = cdnUrl,
-                        onValueChange = {
-                            if (it.length <= Constants.CDN_URL_MAX_LENGTH)
-                                model.customCdnUrl.value = it
-                        },
-                        isError = model.estimateUrlLength(cdnUrl, false) > Constants.CDN_URL_MAX_LENGTH,
-                        label = { Text(stringResource(R.string.activity_main_cdn_server)) }
-                    )
-                }
+                OutlinedTextField(
+                    modifier = Modifier
+                        .padding(
+                            top = 4.dp,
+                            start = 2.dp,
+                            end = 2.dp
+                        )
+                        .fillMaxWidth(),
+                    singleLine = true,
+                    value = cdnUrl,
+                    onValueChange = {
+                        if (it.length <= Constants.CDN_URL_MAX_LENGTH)
+                            model.customCdnUrl.value = it
+                    },
+                    isError = model.estimateUrlLength(cdnUrl, false) > Constants.CDN_URL_MAX_LENGTH,
+                    label = { Text(stringResource(R.string.activity_main_cdn_server)) }
+                )
 
                 SpacedLine(4.dp)
 

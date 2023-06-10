@@ -37,6 +37,8 @@ class PatcherWorker(context: Context, parameters: WorkerParameters)
     private var currentStep = ""
     private var logMessages = mutableListOf<String>()
 
+    private var notificationBuilder: NotificationCompat.Builder? = null
+
     private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
     override suspend fun doWork(): Result {
@@ -62,11 +64,17 @@ class PatcherWorker(context: Context, parameters: WorkerParameters)
         val align = StepAlign(this, storage)
         val sign = StepSign(this, storage)
 
-        val retrieveConfigResult = PatcherConfig.retrieveApiOptions()
-        if (!retrieveConfigResult)
-            onMessage("WARNING: Failed to download config from API server! Using fallback values.")
-
         try {
+            val retrieveConfigResult = PatcherConfig.retrieveApiOptions()
+            if (!retrieveConfigResult)
+                onMessage("WARNING: Failed to download config from API server! Using fallback values.")
+
+            if (PatcherConfig.apiOptions.cdnUrl.isEmpty()) {
+                onMessage("Either you or your server needs to specify a valid CDN url for the game.")
+                showFailedNotification()
+                return Result.failure(workDataOf(Progress to currentProgress, Step to currentStep, Messages to logMessages.toTypedArray()))
+            }
+
             download.run()
             updateProgress(0.2f)
             decompile.run()
@@ -87,14 +95,16 @@ class PatcherWorker(context: Context, parameters: WorkerParameters)
             onMessage("Ready to install.")
             updateStep(R.string.activity_patcher_completed)
         } catch (ex: Exception) {
-            onMessage(Utils.getStackTrace(ex))
-            showFailedNotification()
-            return Result.failure()
+            if (!isStopped) {
+                onMessage(Utils.getStackTrace(ex))
+                showFailedNotification()
+            }
+            return Result.failure(workDataOf(Progress to currentProgress, Step to currentStep, Messages to logMessages.toTypedArray()))
         }
 
         val apkUri = FileProvider.getUriForFile(applicationContext, applicationContext.packageName.plus(".provider"), storage.signedApk)
         showFinishedNotification(Utils.configureInstallIntent(apkUri))
-        return Result.success()
+        return Result.success(workDataOf(Progress to currentProgress, Step to currentStep, Messages to logMessages.toTypedArray()))
     }
 
     override suspend fun updateStep(id: Int) {
@@ -114,7 +124,9 @@ class PatcherWorker(context: Context, parameters: WorkerParameters)
     }
 
     private suspend fun update() {
-        setForeground(createForegroundInfo(createRunningNotification()))
+        if (!isStopped) {
+            setForeground(createForegroundInfo(createRunningNotification()))
+        }
         setProgress(workDataOf(Progress to currentProgress, Step to currentStep, Messages to logMessages.toTypedArray()))
     }
 
@@ -138,15 +150,22 @@ class PatcherWorker(context: Context, parameters: WorkerParameters)
         val intent = WorkManager.getInstance(applicationContext)
             .createCancelPendingIntent(id)
 
-        return NotificationCompat.Builder(applicationContext, ChannelId)
-            .setContentTitle("Patching in progress")
+        if (notificationBuilder == null) {
+            notificationBuilder = NotificationCompat.Builder(applicationContext, ChannelId)
+                .setContentTitle("Patching in progress")
+                .setContentText(currentStep)
+                .setTicker(title)
+                .setOngoing(true)
+                .setOnlyAlertOnce(true)
+                .setSmallIcon(R.drawable.ic_launcher_foreground)
+                .addAction(android.R.drawable.ic_delete, cancel, intent)
+        }
+
+        notificationBuilder!!
             .setContentText(currentStep)
-            .setTicker(title)
             .setProgress(100, (currentProgress * 100).toInt(), false)
-            .setOngoing(true)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .addAction(android.R.drawable.ic_delete, cancel, intent)
-            .build()
+
+        return notificationBuilder!!.build()
     }
 
     private fun showFailedNotification() {

@@ -28,14 +28,17 @@ class StepDownloadPatch(private val manager: StepManager, private val storage: S
                     if (entry == null)
                         break
 
-                    if (entry.name.endsWith(".patch")) {
+                    if (entry.name.endsWith("addedFiles.zip")) {
+                        manager.onMessage("Found addedFiles.zip - files will be added to the apk")
+                        Utils.copyFile(zip, storage.downloadedPatchDir.resolve("addedFiles.zip").toFile())
+                    } else if (entry.name.endsWith(".patch")) {
                         val fileName = Paths.get(entry.name).fileName
 
                         manager.onMessage("Found patch: $fileName")
                         Utils.copyFile(zip, storage.downloadedPatchDir.resolve(fileName).toFile())
-
-                        zip.closeEntry()
                     }
+
+                    zip.closeEntry()
                 }
             }
         }

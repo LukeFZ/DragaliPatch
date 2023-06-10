@@ -8,6 +8,8 @@ import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.patch.FileHeader
 import org.eclipse.jgit.patch.Patch
 import java.io.RandomAccessFile
+import java.util.zip.ZipEntry
+import java.util.zip.ZipInputStream
 import kotlin.experimental.inv
 import kotlin.io.path.exists
 import kotlin.io.path.readText
@@ -29,7 +31,7 @@ class StepPatch(private val manager: StepManager, private val storage: StorageUt
 
         manager.updateStep(R.string.patcher_step_patch_other)
 
-       applyGitPatches()
+        applyRepoPatches()
 
         manager.onMessage("Finished applying patches!")
     }
@@ -68,7 +70,7 @@ class StepPatch(private val manager: StepManager, private val storage: StorageUt
         stringsXml.writeText(contents)
     }
 
-    private fun applyGitPatches() {
+    private fun applyRepoPatches() {
         Git.init().setDirectory(storage.appPatchDir.toFile()).call().use { git ->
             val files = storage.downloadedPatchDir.toFile().listFiles()?.sorted()
 
@@ -91,6 +93,20 @@ class StepPatch(private val manager: StepManager, private val storage: StorageUt
                         }
 
                         manager.onMessage("Finished installing patch.")
+                    } else if (file.name == "addedFiles.zip") {
+                        manager.onMessage("Adding files from addedFiles.zip into apk.")
+
+                        file.inputStream().use { input ->
+                            ZipInputStream(input).use { zip ->
+                                var entry: ZipEntry? = zip.nextEntry
+                                while (entry != null) {
+                                    manager.onMessage("Adding file $entry.name")
+                                    Utils.copyFile(zip, storage.appPatchDir.resolve(entry.name).toFile())
+                                    zip.closeEntry()
+                                    entry = zip.nextEntry
+                                }
+                            }
+                        }
                     }
                 }
             }

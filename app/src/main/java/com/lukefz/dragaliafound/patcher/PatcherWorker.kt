@@ -69,7 +69,7 @@ class PatcherWorker(context: Context, parameters: WorkerParameters)
             if (!retrieveConfigResult)
                 onMessage("WARNING: Failed to download config from API server! Using fallback values.")
 
-            if (PatcherConfig.apiOptions.cdnUrl.isEmpty()) {
+            if (PatcherConfig.cdnUrl.isEmpty()) {
                 onMessage("Either you or your server needs to specify a valid CDN url for the game.")
                 showFailedNotification()
                 return Result.failure(workDataOf(Progress to currentProgress, Step to currentStep, Messages to logMessages.toTypedArray()))

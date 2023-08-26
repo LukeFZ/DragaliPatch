@@ -32,6 +32,7 @@ import com.lukefz.dragaliafound.utils.Constants
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun MainScreen(navController: NavController, model: MainScreenViewModel = viewModel()) {
+    val appName by remember { model.customAppName }
     val serverUrl by remember { model.customServerUrl }
     val cdnUrl by remember { model.customCdnUrl }
 
@@ -63,6 +64,7 @@ fun MainScreen(navController: NavController, model: MainScreenViewModel = viewMo
                 serverUrl.isNotEmpty()) {
                 ExtendedFloatingActionButton(
                     onClick = {
+                        PatcherConfig.appName = model.customAppName.value
                         PatcherConfig.apiUrl = model.customServerUrl.value
                         PatcherConfig.cdnUrl = model.customCdnUrl.value
                         navController.navigate(NavScreens.Patcher.route)
@@ -90,6 +92,24 @@ fun MainScreen(navController: NavController, model: MainScreenViewModel = viewMo
                 AppContainer(model.patchedAppInfo, model.patchedAppIcon)
 
                 SpacedLine(2.dp)
+
+                OutlinedTextField(
+                    modifier = Modifier
+                        .padding(
+                            top = 4.dp,
+                            start = 2.dp,
+                            end = 2.dp
+                        )
+                        .fillMaxWidth(),
+                    singleLine = true,
+                    value = appName,
+                    onValueChange = {
+                        model.customAppName.value = it
+                    },
+                    label = { Text(stringResource(R.string.activity_main_custom_name)) }
+                )
+
+                Spacer(Modifier.size(2.dp))
 
                 OutlinedTextField(
                     modifier = Modifier

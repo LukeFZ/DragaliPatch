@@ -22,6 +22,8 @@ class MainScreenViewModel(private val app: Application) : AndroidViewModel(app) 
     var originalAppIcon: Drawable? = null
     var patchedAppIcon: Drawable? = null
     var isPatchable = false
+    var customAppName = mutableStateOf("")
+
     var customServerUrl = mutableStateOf("")
 
     var customCdnUrl = mutableStateOf("")

@@ -27,7 +27,12 @@ class StepPatch(private val manager: StepManager, private val storage: StorageUt
 
         val urlWithoutPrefixAndSuffix = apiValues.apiUrl.split("://")[1].dropLast(1)
         patchBaasUrl(urlWithoutPrefixAndSuffix, apiValues.apiOptions.useUnifiedLogin, apiValues.isHttp)
-        patchPackageName(urlWithoutPrefixAndSuffix)
+
+        if (apiValues.appName.isEmpty()) {
+            patchPackageName(Constants.PATCHED_APP_NAME.plus("\n$urlWithoutPrefixAndSuffix"))
+        } else {
+            patchPackageName(apiValues.appName)
+        }
 
         manager.updateStep(R.string.patcher_step_patch_other)
 
@@ -50,7 +55,7 @@ class StepPatch(private val manager: StepManager, private val storage: StorageUt
         npf.writeText(contents)
     }
 
-    private fun patchPackageName(nameSuffix: String) {
+    private fun patchPackageName(appName: String) {
         val patchedValues = listOf("en-rUS", "ja-rJP", "zh-rCN", "zh-rHK", "zh-rTW")
         val appNameRegex = Regex("<string name=\"app_name\">.*</string>\n")
         for (value in patchedValues) {
@@ -65,7 +70,7 @@ class StepPatch(private val manager: StepManager, private val storage: StorageUt
         val stringsXml = storage.appPatchDir.resolve(Constants.STRINGS_XML_LOCATION)
         val contents = stringsXml
             .readText() // NOTE: When adding localizations, pass in context or the localized patched app name directly
-            .replace(Constants.DEFAULT_APP_NAME, Constants.PATCHED_APP_NAME.plus("\n$nameSuffix"))
+            .replace(Constants.DEFAULT_APP_NAME, appName)
 
         stringsXml.writeText(contents)
     }

@@ -6,6 +6,8 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 
 object PatcherConfig {
+    var appName: String = ""
+
     var apiUrl: String = ""
         set(value) { field = fixUrl(value, Constants.URL_MAX_LENGTH) }
 
